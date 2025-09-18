@@ -1,0 +1,34 @@
+import { Request, Response } from 'express';
+import { PortfolioService } from '../services/portfolioService';
+import { ResponseHelper } from '../utils/responseHelper';
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../constants/httpStatus';
+import { asyncHandler, AppError } from '../utils/errorHandler';
+import { UserDocument } from '../types/userDocument.types';
+
+export class PortfolioController {
+  static getUserProfile = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as UserDocument;
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
+    }
+    
+    const userProfile = await PortfolioService.getUserProfile(user._id.toString());
+    return ResponseHelper.success(res, userProfile, SUCCESS_MESSAGES.PROFILE_RETRIEVED);
+  });
+
+  static updateUserPortfolio = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as UserDocument;
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
+    }
+
+    const { portfolioData } = req.body;
+    
+    if (!portfolioData) {
+      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    }
+
+    const portfolio = await PortfolioService.updateUserPortfolio(user._id.toString(), portfolioData);
+    return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_UPDATED);
+  });
+}
