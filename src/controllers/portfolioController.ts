@@ -3,7 +3,7 @@ import { PortfolioService } from '../services/portfolioService';
 import { ResponseHelper } from '../utils/responseHelper';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../constants/httpStatus';
 import { asyncHandler, AppError } from '../utils/errorHandler';
-import { UserDocument } from '../types/userDocument.types';
+import { UserDocument } from '../types/user.types';
 
 export class PortfolioController {
   static getUserProfile = asyncHandler(async (req: Request, res: Response) => {

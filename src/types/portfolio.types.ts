@@ -5,7 +5,7 @@ export interface PersonalInfo {
   email: string;
   phone?: string;
   website?: string;
-  summary: string;
+  bio: string;
 }
 
 export interface WorkExperience {
@@ -44,17 +44,33 @@ export interface Project {
   github?: string;
 }
 
+export interface Skill {
+  name: string;
+  category?: string;
+}
+
 export interface PortfolioCustomizations {
   template: string;
   colorScheme: string;
   fontFamily: string;
 }
 
+import { Types } from 'mongoose';
+
 export interface PortfolioData {
+  _id?: string;
+  userId: Types.ObjectId;
+  name: string;
+  description?: string;
+  slug: string;
+  isPublic: boolean;
+  viewCount: number;
   personalInfo: PersonalInfo;
   experience: WorkExperience[];
   education: Education[];
-  skills: string[];
+  skills: Skill[];
   projects: Project[];
   customizations: PortfolioCustomizations;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

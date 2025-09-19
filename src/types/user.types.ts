@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface User {
   _id: Types.ObjectId;
@@ -7,7 +7,10 @@ export interface User {
   name: string;
   avatar?: string;
   username?: string;
-  portfolio: Types.ObjectId;
+  portfolios: Types.ObjectId[];
+  portfolioCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface UserDocument extends Omit<User, '_id'>, Document {}
