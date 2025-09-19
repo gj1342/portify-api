@@ -13,4 +13,6 @@ export interface User {
   updatedAt: Date;
 }
 
-export interface UserDocument extends Omit<User, '_id'>, Document {}
+export interface UserDocument extends Omit<User, '_id'>, Document {
+  _id: Types.ObjectId;
+}

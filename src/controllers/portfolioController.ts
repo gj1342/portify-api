@@ -16,7 +16,7 @@ export class PortfolioController {
     return ResponseHelper.success(res, userProfile, SUCCESS_MESSAGES.PROFILE_RETRIEVED);
   });
 
-  static updateUserPortfolio = asyncHandler(async (req: Request, res: Response) => {
+  static createPortfolio = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user as UserDocument;
     if (!user) {
       throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
@@ -28,7 +28,35 @@ export class PortfolioController {
       throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
     }
 
-    const portfolio = await PortfolioService.updateUserPortfolio(user._id.toString(), portfolioData);
+    const portfolio = await PortfolioService.createPortfolio(user._id.toString(), portfolioData);
+    return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_CREATED);
+  });
+
+  static updatePortfolio = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as UserDocument;
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
+    }
+
+    const { portfolioId } = req.params;
+    const { portfolioData } = req.body;
+    
+    if (!portfolioData) {
+      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    }
+
+    const portfolio = await PortfolioService.updatePortfolio(user._id.toString(), portfolioId, portfolioData);
     return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_UPDATED);
+  });
+
+  static getPortfolio = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as UserDocument;
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
+    }
+
+    const { portfolioId } = req.params;
+    const portfolio = await PortfolioService.getPortfolio(user._id.toString(), portfolioId);
+    return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_RETRIEVED);
   });
 }

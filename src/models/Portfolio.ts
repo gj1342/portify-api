@@ -59,7 +59,7 @@ const PortfolioSchema = new Schema<PortfolioData>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   name: { type: String, required: true, maxlength: 100 },
   description: { type: String, maxlength: 200 },
-  slug: { type: String, required: true, unique: true },
+  slug: { type: String, required: true },
   isPublic: { type: Boolean, default: true },
   viewCount: { type: Number, default: 0 },
   personalInfo: { type: PersonalInfoSchema, required: true },
