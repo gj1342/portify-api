@@ -26,5 +26,6 @@ export const SUCCESS_MESSAGES = {
   PORTFOLIO_RETRIEVED: 'Portfolio retrieved successfully',
   PORTFOLIO_UPDATED: 'Portfolio updated successfully',
   PORTFOLIO_CREATED: 'Portfolio created successfully',
+  PORTFOLIO_DELETED: 'Portfolio deleted successfully',
   OPERATION_SUCCESS: 'Operation completed successfully',
 } as const;

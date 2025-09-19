@@ -74,4 +74,22 @@ export class PortfolioService {
 
     return portfolio;
   }
+
+  static async deletePortfolio(userId: string, portfolioId: string) {
+    const portfolio = await Portfolio.findOneAndDelete({
+      _id: portfolioId,
+      userId: userId
+    });
+
+    if (!portfolio) {
+      throw new AppError('Portfolio not found or access denied', 404);
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { portfolios: portfolio._id },
+      $inc: { portfolioCount: -1 }
+    });
+
+    return { message: 'Portfolio deleted successfully', deletedPortfolio: portfolio };
+  }
 }
