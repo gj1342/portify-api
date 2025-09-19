@@ -49,12 +49,6 @@ export interface Skill {
   category?: string;
 }
 
-export interface PortfolioCustomizations {
-  template: string;
-  colorScheme: string;
-  fontFamily: string;
-}
-
 import { Types } from 'mongoose';
 
 export interface PortfolioData {
@@ -70,7 +64,6 @@ export interface PortfolioData {
   education: Education[];
   skills: Skill[];
   projects: Project[];
-  customizations: PortfolioCustomizations;
   createdAt?: Date;
   updatedAt?: Date;
 }

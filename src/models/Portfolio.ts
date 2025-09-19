@@ -49,12 +49,6 @@ const SkillSchema = new Schema({
   category: { type: String },
 }, { _id: false });
 
-const CustomizationsSchema = new Schema({
-  template: { type: String, default: 'default' },
-  colorScheme: { type: String, default: 'blue' },
-  fontFamily: { type: String, default: 'inter' },
-}, { _id: false });
-
 const PortfolioSchema = new Schema<PortfolioData>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   name: { type: String, required: true, maxlength: 100 },
@@ -67,7 +61,6 @@ const PortfolioSchema = new Schema<PortfolioData>({
   education: [EducationSchema],
   skills: [SkillSchema],
   projects: [ProjectSchema],
-  customizations: { type: CustomizationsSchema, default: () => ({}) },
 }, {
   timestamps: true,
 });

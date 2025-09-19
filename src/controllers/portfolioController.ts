@@ -22,9 +22,9 @@ export class PortfolioController {
       throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
     }
 
-    const { portfolioData } = req.body;
+    const portfolioData = req.body;
     
-    if (!portfolioData) {
+    if (!portfolioData || Object.keys(portfolioData).length === 0) {
       throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
     }
 
@@ -39,9 +39,9 @@ export class PortfolioController {
     }
 
     const { portfolioId } = req.params;
-    const { portfolioData } = req.body;
+    const portfolioData = req.body;
     
-    if (!portfolioData) {
+    if (!portfolioData || Object.keys(portfolioData).length === 0) {
       throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
     }
 
@@ -58,5 +58,16 @@ export class PortfolioController {
     const { portfolioId } = req.params;
     const portfolio = await PortfolioService.getPortfolio(user._id.toString(), portfolioId);
     return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_RETRIEVED);
+  });
+
+  static deletePortfolio = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as UserDocument;
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
+    }
+
+    const { portfolioId } = req.params;
+    const result = await PortfolioService.deletePortfolio(user._id.toString(), portfolioId);
+    return ResponseHelper.success(res, result, SUCCESS_MESSAGES.PORTFOLIO_DELETED);
   });
 }
