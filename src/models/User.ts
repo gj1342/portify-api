@@ -7,7 +7,8 @@ const UserSchema = new Schema<IUser>({
   name: { type: String, required: true },
   avatar: { type: String },
   username: { type: String },
-  portfolio: { type: Schema.Types.ObjectId, ref: 'Portfolio' },
+  portfolios: [{ type: Schema.Types.ObjectId, ref: 'Portfolio' }],
+  portfolioCount: { type: Number, default: 0, max: 2 },
 }, {
   timestamps: true,
 });
@@ -15,5 +16,13 @@ const UserSchema = new Schema<IUser>({
 UserSchema.index({ googleId: 1 }, { unique: true });
 UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ username: 1 }, { unique: true, sparse: true });
+
+UserSchema.pre('save', function(next) {
+  if (this.portfolios && this.portfolios.length > 2) {
+    return next(new Error('Users can only create up to 2 portfolios'));
+  }
+  this.portfolioCount = this.portfolios ? this.portfolios.length : 0;
+  next();
+});
 
 export const User = mongoose.model<IUser>('User', UserSchema);

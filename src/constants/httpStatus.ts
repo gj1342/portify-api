@@ -23,6 +23,7 @@ export const ERROR_MESSAGES = {
 export const SUCCESS_MESSAGES = {
   AUTH_SUCCESS: 'Authentication successful',
   PROFILE_RETRIEVED: 'User profile retrieved successfully',
+  PORTFOLIO_RETRIEVED: 'Portfolio retrieved successfully',
   PORTFOLIO_UPDATED: 'Portfolio updated successfully',
   PORTFOLIO_CREATED: 'Portfolio created successfully',
   OPERATION_SUCCESS: 'Operation completed successfully',

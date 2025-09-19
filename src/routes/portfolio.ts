@@ -6,11 +6,25 @@ import { validateRequest, portfolioValidationSchema } from '../utils/validation'
 const router = Router();
 
 router.get('/me', authenticateToken, PortfolioController.getUserProfile);
-router.put(
-  '/me',
+
+router.post(
+  '/',
   authenticateToken,
   validateRequest({ body: portfolioValidationSchema }),
-  PortfolioController.updateUserPortfolio
+  PortfolioController.createPortfolio
+);
+
+router.put(
+  '/:portfolioId',
+  authenticateToken,
+  validateRequest({ body: portfolioValidationSchema }),
+  PortfolioController.updatePortfolio
+);
+
+router.get(
+  '/:portfolioId',
+  authenticateToken,
+  PortfolioController.getPortfolio
 );
 
 export default router;
