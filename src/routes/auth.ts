@@ -15,6 +15,8 @@ router.get(
   AuthController.handleGoogleCallback
 );
 
+router.get('/validate', AuthController.validateToken);
+
 export default router;
 
 
