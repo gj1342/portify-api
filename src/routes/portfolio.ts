@@ -2,8 +2,97 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { PortfolioController } from '../controllers/portfolioController';
 import { validateRequest, portfolioValidationSchema } from '../utils/validation';
+import env from '../config/env';
+import { CLOUDINARY_AVATAR_FOLDER, ALLOWED_IMAGE_MIME_REGEX, MAX_IMAGE_SIZE_BYTES, signUpload } from '../config/cloudinary';
+import multer from 'multer';
+import crypto from 'crypto';
 
 const router = Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_IMAGE_SIZE_BYTES },
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_IMAGE_MIME_REGEX.test(file.mimetype)) cb(null, true);
+    else cb(new Error('Invalid file type'));
+  },
+});
+
+async function uploadAvatarToCloudinary(buffer: Buffer, filename: string, mimetype: string) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = CLOUDINARY_AVATAR_FOLDER;
+  const publicId = filename.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40) || `avatar_${timestamp}`;
+  const signature = signUpload({ folder, public_id: publicId, timestamp } as any);
+
+  const blob = new Blob([buffer], { type: mimetype });
+  const form = new FormData();
+  form.append('file', blob, filename);
+  form.append('api_key', env.CLOUDINARY_API_KEY);
+  form.append('timestamp', String(timestamp));
+  form.append('signature', signature);
+  form.append('folder', folder);
+  form.append('public_id', publicId);
+
+  const res = await (globalThis as any).fetch(`https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: form as any,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+  const json = await res.json() as { secure_url: string; public_id: string };
+  return json;
+}
+
+/**
+ * @swagger
+ * /portfolio/avatar:
+ *   post:
+ *     summary: Upload an avatar image and get its public URL
+ *     description: Accepts a multipart image file and uploads it to Cloudinary. Returns the secure URL to store in personalInfo.avatar.
+ *     tags: [Portfolio]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Avatar uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 secureUrl:
+ *                   type: string
+ *                 publicId:
+ *                   type: string
+ *       400:
+ *         description: Invalid file
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Upload failed
+ */
+router.post('/avatar', authenticateToken, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, error: 'No file provided' });
+    const { buffer, originalname, mimetype } = req.file;
+    const { secure_url, public_id } = await uploadAvatarToCloudinary(buffer, originalname, mimetype);
+    return res.json({ secureUrl: secure_url, publicId: public_id });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message || 'Upload failed' });
+  }
+});
 
 /**
  * @swagger

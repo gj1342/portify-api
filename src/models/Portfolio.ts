@@ -8,6 +8,7 @@ const PersonalInfoSchema = new Schema({
   email: { type: String, required: true },
   phone: { type: String },
   website: { type: String },
+  avatar: { type: String },
   bio: { type: String, required: true },
 }, { _id: false });
 

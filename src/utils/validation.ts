@@ -76,6 +76,9 @@ export const portfolioValidationSchema = Joi.object({
     website: Joi.string().uri().optional().allow('').messages({
       'string.uri': 'Please provide a valid website URL'
     }),
+    avatar: Joi.string().uri().optional().allow('').messages({
+      'string.uri': 'Please provide a valid avatar URL'
+    }),
     bio: Joi.string().required().max(500).messages({
       'string.empty': 'Bio is required',
       'string.max': 'Bio must not exceed 500 characters'

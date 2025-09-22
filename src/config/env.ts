@@ -13,6 +13,9 @@ interface Environment {
   FRONTEND_URL: string;
   BACKEND_URL: string;
   AUTH_GOOGLE_CALLBACK: string;
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
+  CLOUDINARY_API_SECRET: string;
 }
 
 const env: Environment = {
@@ -26,6 +29,9 @@ const env: Environment = {
   BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:3000',
   AUTH_GOOGLE_CALLBACK:
     process.env.AUTH_GOOGLE_CALLBACK || 'http://localhost:3000/api/v1/auth/google/callback',
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
 };
 
 export default env;
@@ -39,6 +45,9 @@ export const validateEnv = (): void => {
     'FRONTEND_URL',
     'BACKEND_URL',
     'AUTH_GOOGLE_CALLBACK',
+    'CLOUDINARY_CLOUD_NAME',
+    'CLOUDINARY_API_KEY',
+    'CLOUDINARY_API_SECRET',
   ] as const;
 
   const missing = required.filter((key) => !(process.env as Record<string, string | undefined>)[key]);
