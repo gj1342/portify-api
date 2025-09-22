@@ -18,8 +18,7 @@ const WorkExperienceSchema = new Schema({
   startDate: { type: String, required: true },
   endDate: { type: String },
   current: { type: Boolean, default: false },
-  description: { type: String, required: true },
-  achievements: [{ type: String }],
+  contribution: [{ type: String }],
 }, { _id: false });
 
 const EducationSchema = new Schema({
@@ -29,8 +28,6 @@ const EducationSchema = new Schema({
   startDate: { type: String, required: true },
   endDate: { type: String },
   current: { type: Boolean, default: false },
-  gpa: { type: String },
-  achievements: [{ type: String }],
 }, { _id: false });
 
 const ProjectSchema = new Schema({
@@ -40,8 +37,10 @@ const ProjectSchema = new Schema({
   startDate: { type: String, required: true },
   endDate: { type: String },
   current: { type: Boolean, default: false },
-  url: { type: String },
-  github: { type: String },
+  links: [{
+    label: { type: String },
+    url: { type: String, required: true }
+  }],
 }, { _id: false });
 
 const SkillSchema = new Schema({

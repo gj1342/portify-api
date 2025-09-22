@@ -171,23 +171,17 @@ const swaggerDefinition: SwaggerDefinition = {
             example: false,
             description: 'Whether this is the current position',
           },
-          description: {
-            type: 'string',
-            maxLength: 1000,
-            example: 'Led development of microservices architecture and improved system performance by 40%.',
-            description: 'Job description and responsibilities',
-          },
-          achievements: {
+          contribution: {
             type: 'array',
             items: {
               type: 'string',
               maxLength: 200,
             },
             example: ['Improved system performance by 40%', 'Led team of 5 developers'],
-            description: 'Key achievements in this role',
+            description: 'Key contributions in this role',
           },
         },
-        required: ['company', 'position', 'location', 'startDate', 'description'],
+        required: ['company', 'position', 'location', 'startDate'],
       },
       Education: {
         type: 'object',
@@ -229,21 +223,6 @@ const swaggerDefinition: SwaggerDefinition = {
             type: 'boolean',
             example: false,
             description: 'Whether currently enrolled',
-          },
-          gpa: {
-            type: 'string',
-            maxLength: 10,
-            example: '3.8',
-            description: 'Grade Point Average (optional)',
-          },
-          achievements: {
-            type: 'array',
-            items: {
-              type: 'string',
-              maxLength: 200,
-            },
-            example: ['Magna Cum Laude', 'Dean\'s List'],
-            description: 'Academic achievements',
           },
         },
         required: ['institution', 'degree', 'field', 'startDate'],
@@ -310,17 +289,17 @@ const swaggerDefinition: SwaggerDefinition = {
             example: false,
             description: 'Whether the project is currently ongoing',
           },
-          url: {
-            type: 'string',
-            format: 'uri',
-            example: 'https://ecommerce-demo.com',
-            description: 'Project URL (optional)',
-          },
-          github: {
-            type: 'string',
-            format: 'uri',
-            example: 'https://github.com/johndoe/ecommerce-platform',
-            description: 'GitHub repository URL (optional)',
+          links: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string', example: 'Live Demo' },
+                url: { type: 'string', format: 'uri', example: 'https://ecommerce-demo.com' }
+              },
+              required: ['url']
+            },
+            description: 'Related links for the project (live demo, GitHub, design, etc.)'
           },
         },
         required: ['name', 'description', 'startDate'],

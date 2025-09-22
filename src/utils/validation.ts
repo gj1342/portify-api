@@ -101,11 +101,7 @@ export const portfolioValidationSchema = Joi.object({
       }),
       endDate: Joi.string().optional().allow(''),
       current: Joi.boolean().default(false),
-      description: Joi.string().required().max(1000).messages({
-        'string.empty': 'Job description is required',
-        'string.max': 'Description must not exceed 1000 characters'
-      }),
-      achievements: Joi.array().items(
+      contribution: Joi.array().items(
         Joi.string().max(200).messages({
           'string.max': 'Each achievement must not exceed 200 characters'
         })
@@ -132,14 +128,6 @@ export const portfolioValidationSchema = Joi.object({
       }),
       endDate: Joi.string().optional().allow(''),
       current: Joi.boolean().default(false),
-      gpa: Joi.string().max(10).optional().allow('').messages({
-        'string.max': 'GPA must not exceed 10 characters'
-      }),
-      achievements: Joi.array().items(
-        Joi.string().max(200).messages({
-          'string.max': 'Each achievement must not exceed 200 characters'
-        })
-      ).default([]),
     })
   ).default([]),
   skills: Joi.array().items(
@@ -174,12 +162,14 @@ export const portfolioValidationSchema = Joi.object({
       }),
       endDate: Joi.string().optional().allow(''),
       current: Joi.boolean().default(false),
-      url: Joi.string().uri().optional().allow('').messages({
-        'string.uri': 'Please provide a valid project URL'
-      }),
-      github: Joi.string().uri().optional().allow('').messages({
-        'string.uri': 'Please provide a valid GitHub URL'
-      }),
+      links: Joi.array().items(
+        Joi.object({
+          label: Joi.string().max(50).optional().allow(''),
+          url: Joi.string().uri().required().messages({
+            'string.uri': 'Please provide a valid link URL'
+          })
+        })
+      ).default([]),
     })
   ).default([]),
 });
