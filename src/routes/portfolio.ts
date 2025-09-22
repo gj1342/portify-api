@@ -76,8 +76,7 @@ router.get('/me', authenticateToken, PortfolioController.getUserProfile);
  *                 startDate: "2022-01"
  *                 endDate: "2024-01"
  *                 current: false
- *                 description: "Led development of microservices architecture and improved system performance by 40%."
- *                 achievements: ["Improved system performance by 40%", "Led team of 5 developers"]
+ *                 contribution: ["Improved system performance by 40%", "Led team of 5 developers"]
  *             education:
  *               - institution: "Stanford University"
  *                 degree: "Bachelor of Science"
@@ -85,8 +84,6 @@ router.get('/me', authenticateToken, PortfolioController.getUserProfile);
  *                 startDate: "2018-09"
  *                 endDate: "2022-06"
  *                 current: false
- *                 gpa: "3.8"
- *                 achievements: ["Magna Cum Laude", "Dean's List"]
  *             skills:
  *               - name: "JavaScript"
  *                 category: "Programming Languages"
@@ -99,8 +96,11 @@ router.get('/me', authenticateToken, PortfolioController.getUserProfile);
  *                 startDate: "2023-01"
  *                 endDate: "2023-06"
  *                 current: false
- *                 url: "https://ecommerce-demo.com"
- *                 github: "https://github.com/johndoe/ecommerce-platform"
+ *                 links:
+ *                   - label: "Live Demo"
+ *                     url: "https://ecommerce-demo.com"
+ *                   - label: "GitHub"
+ *                     url: "https://github.com/johndoe/ecommerce-platform"
  *     responses:
  *       201:
  *         description: Portfolio created successfully

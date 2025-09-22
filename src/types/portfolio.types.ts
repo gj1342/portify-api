@@ -16,8 +16,7 @@ export interface WorkExperience {
   startDate: string;
   endDate?: string;
   current: boolean;
-  description: string;
-  achievements: string[];
+  contribution: string[];
 }
 
 export interface Education {
@@ -28,8 +27,6 @@ export interface Education {
   startDate: string;
   endDate?: string;
   current: boolean;
-  gpa?: string;
-  achievements: string[];
 }
 
 export interface Project {
@@ -40,8 +37,10 @@ export interface Project {
   startDate: string;
   endDate?: string;
   current: boolean;
-  url?: string;
-  github?: string;
+  links?: Array<{
+    label?: string;
+    url: string;
+  }>;
 }
 
 export interface Skill {
