@@ -121,6 +121,12 @@ const swaggerDefinition: SwaggerDefinition = {
             example: 'https://johndoe.com',
             description: 'Personal website URL (optional)',
           },
+          avatar: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://cdn.example.com/uploads/avatars/john.jpg',
+            description: 'Public URL of the uploaded avatar (optional)',
+          },
           bio: {
             type: 'string',
             maxLength: 500,
