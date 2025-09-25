@@ -3,6 +3,7 @@ import { User } from '../models/User';
 import { PortfolioData } from '../types/portfolio.types';
 import { AppError } from '../utils/errorHandler';
 import { ERROR_MESSAGES } from '../constants/httpStatus';
+import { SlugGenerator } from '../utils/slugGenerator';
 
 export class PortfolioService {
   static async getUserProfile(userId: string) {
@@ -35,8 +36,11 @@ export class PortfolioService {
       throw new AppError('Users can only create up to 2 portfolios', 400);
     }
 
+    const uniqueSlug = await SlugGenerator.generateUniqueSlug(portfolioData.name);
+
     const portfolio = await Portfolio.create({
       ...portfolioData,
+      slug: uniqueSlug,
       userId: user._id,
     });
 
@@ -49,15 +53,24 @@ export class PortfolioService {
   }
 
   static async updatePortfolio(userId: string, portfolioId: string, portfolioData: PortfolioData) {
-    const portfolio = await Portfolio.findOneAndUpdate(
-      { _id: portfolioId, userId: userId },
-      portfolioData,
-      { new: true }
-    );
+    const existingPortfolio = await Portfolio.findOne({ _id: portfolioId, userId: userId });
 
-    if (!portfolio) {
+    if (!existingPortfolio) {
       throw new AppError('Portfolio not found or access denied', 404);
     }
+
+    let updateData = { ...portfolioData };
+
+    if (portfolioData.name && portfolioData.name !== existingPortfolio.name) {
+      const uniqueSlug = await SlugGenerator.generateUniqueSlug(portfolioData.name, portfolioId);
+      updateData.slug = uniqueSlug;
+    }
+
+    const portfolio = await Portfolio.findOneAndUpdate(
+      { _id: portfolioId, userId: userId },
+      updateData,
+      { new: true }
+    );
 
     return portfolio;
   }
@@ -91,5 +104,9 @@ export class PortfolioService {
     });
 
     return { message: 'Portfolio deleted successfully', deletedPortfolio: portfolio };
+  }
+
+  static async checkSlugAvailability(slug: string, excludeId?: string): Promise<boolean> {
+    return await SlugGenerator.isSlugAvailable(slug, excludeId);
   }
 }

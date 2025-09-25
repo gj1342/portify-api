@@ -60,6 +60,14 @@ export class PortfolioController {
     return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_RETRIEVED);
   });
 
+  static checkSlugAvailability = asyncHandler(async (req: Request, res: Response) => {
+    const { slug } = req.params;
+    const { portfolioId } = req.query;
+    
+    const isAvailable = await PortfolioService.checkSlugAvailability(slug, portfolioId as string);
+    return ResponseHelper.success(res, { slug, isAvailable }, 'Slug availability checked');
+  });
+
   static deletePortfolio = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user as UserDocument;
     if (!user) {

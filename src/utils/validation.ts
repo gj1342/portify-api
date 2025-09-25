@@ -48,8 +48,7 @@ export const portfolioValidationSchema = Joi.object({
   description: Joi.string().max(200).optional().allow('').messages({
     'string.max': 'Portfolio description must not exceed 200 characters'
   }),
-  slug: Joi.string().required().pattern(/^[a-z0-9-]+$/).messages({
-    'string.empty': 'Portfolio slug is required',
+  slug: Joi.string().optional().pattern(/^[a-z0-9-]+$/).messages({
     'string.pattern.base': 'Slug must contain only lowercase letters, numbers, and hyphens'
   }),
   isPublic: Joi.boolean().default(true),
