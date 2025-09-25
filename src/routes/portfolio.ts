@@ -409,4 +409,58 @@ router.delete(
   PortfolioController.deletePortfolio
 );
 
+/**
+ * @swagger
+ * /portfolio/slug/{slug}:
+ *   get:
+ *     summary: Check if a portfolio slug is available
+ *     description: Check if a portfolio slug is available for use
+ *     tags: [Portfolio]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The slug to check
+ *       - in: query
+ *         name: portfolioId
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Portfolio ID to exclude from check (for updates)
+ *     responses:
+ *       200:
+ *         description: Slug availability checked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     slug:
+ *                       type: string
+ *                     isAvailable:
+ *                       type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get(
+  '/slug/:slug',
+  authenticateToken,
+  PortfolioController.checkSlugAvailability
+);
+
 export default router;
