@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { TemplateController } from '../controllers/templateController';
+import { TemplateService } from '../services/templateService';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import { validateRequest, templateValidationSchema } from '../utils/validation';
 import { CLOUDINARY_TEMPLATE_FOLDER, ALLOWED_IMAGE_MIME_REGEX, MAX_IMAGE_SIZE_BYTES, signUpload } from '../config/cloudinary';
@@ -13,8 +14,11 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_IMAGE_SIZE_BYTES },
   fileFilter: (_req, file, cb) => {
-    if (ALLOWED_IMAGE_MIME_REGEX.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Invalid file type'));
+    if (ALLOWED_IMAGE_MIME_REGEX.test(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed (JPEG, JPG, PNG, WebP, GIF, AVIF)'));
+    }
   },
 });
 
@@ -49,8 +53,8 @@ async function uploadTemplateImageToCloudinary(buffer: Buffer, filename: string,
  * @swagger
  * /templates/upload-image:
  *   post:
- *     summary: Upload template image and get preview/thumbnail URLs (Admin Only)
- *     description: Upload a high-quality template image to Cloudinary. Returns both preview and thumbnail URLs generated from the same image using Cloudinary transformations. Requires admin role.
+ *     summary: Upload template image and get optimized URLs (Admin Only)
+ *     description: Upload a high-quality template image to Cloudinary. Returns the original image URL plus optimized preview and thumbnail URLs. The preview and thumbnail maintain aspect ratio and are optimized for web delivery. Requires admin role.
  *     tags: [Templates]
  *     security:
  *       - bearerAuth: []
@@ -64,10 +68,13 @@ async function uploadTemplateImageToCloudinary(buffer: Buffer, filename: string,
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: High-quality template image file
+ *                 description: High-quality template image file (JPEG, JPG, PNG, WebP, GIF, AVIF only)
+ *               templateId:
+ *                 type: string
+ *                 description: Optional template ID to automatically update with image URLs
  *     responses:
  *       200:
- *         description: Template image uploaded successfully with generated preview and thumbnail URLs
+ *         description: Template image uploaded successfully. If templateId is provided, the template is automatically updated with the image URLs.
  *         content:
  *           application/json:
  *             schema:
@@ -94,7 +101,7 @@ async function uploadTemplateImageToCloudinary(buffer: Buffer, filename: string,
  *                           format: uri
  *                           example: 'https://res.cloudinary.com/portify/image/upload/portify/templates/template_professional_123.jpg'
  *       400:
- *         description: Invalid file
+ *         description: Bad request - No file provided or invalid file type (only JPEG, JPG, PNG, WebP, GIF, AVIF allowed)
  *         content:
  *           application/json:
  *             schema:
@@ -119,19 +126,40 @@ router.post('/upload-image', authenticateToken, requireAdmin, upload.single('fil
     }
 
     const { buffer, originalname, mimetype } = req.file;
+    const { templateId } = req.body; 
+    
     const { secure_url, public_id } = await uploadTemplateImageToCloudinary(buffer, originalname, mimetype);
     
     const baseUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload`;
     
+    const imageData = {
+      publicId: public_id,
+      originalUrl: secure_url,
+      previewUrl: `${baseUrl}/c_limit,w_800,h_600,f_auto,q_auto/${public_id}`,
+      thumbnailUrl: `${baseUrl}/c_limit,w_300,h_300,f_auto,q_auto/${public_id}`
+    };
+
+    let updatedTemplate = null;
+    if (templateId) {
+      try {
+        updatedTemplate = await TemplateService.updateTemplate(templateId, {
+          previewImage: imageData.previewUrl,
+          thumbnailImage: imageData.thumbnailUrl
+        });
+      } catch (templateError) {
+        console.warn('Template update failed:', templateError);
+      }
+    }
+    
     return res.json({
       success: true,
       data: {
-        publicId: public_id,
-        originalUrl: secure_url,
-        previewUrl: `${baseUrl}/w_800,h_600,c_fill/${public_id}.jpg`,
-        thumbnailUrl: `${baseUrl}/w_300,h_225,c_fill/${public_id}.jpg`
+        ...imageData,
+        ...(updatedTemplate && { updatedTemplate })
       },
-      message: 'Template image uploaded successfully with preview and thumbnail URLs generated',
+      message: templateId 
+        ? 'Template image uploaded and template updated successfully'
+        : 'Template image uploaded successfully. Use originalUrl for full size, previewUrl for medium size, and thumbnailUrl for small size.',
       timestamp: new Date().toISOString()
     });
   } catch (err: any) {
