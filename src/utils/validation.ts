@@ -82,6 +82,27 @@ export const portfolioValidationSchema = Joi.object({
       'string.empty': 'Bio is required',
       'string.max': 'Bio must not exceed 500 characters'
     }),
+    socialLinks: Joi.array().items(
+      Joi.object({
+        platform: Joi.string().valid(
+          'linkedin', 'github', 'twitter', 'instagram', 'facebook', 
+          'youtube', 'tiktok', 'behance', 'dribbble', 'medium', 
+          'devto', 'personal'
+        ).required().messages({
+          'string.empty': 'Social platform is required',
+          'any.only': 'Invalid social platform'
+        }),
+        url: Joi.string().uri().required().messages({
+          'string.empty': 'Social URL is required',
+          'string.uri': 'Please provide a valid social URL'
+        }),
+        label: Joi.string().max(50).optional().allow('').messages({
+          'string.max': 'Social link label must not exceed 50 characters'
+        })
+      })
+    ).default([]).messages({
+      'array.base': 'Social links must be an array'
+    }),
   }).required(),
   experience: Joi.array().items(
     Joi.object({
@@ -174,4 +195,76 @@ export const portfolioValidationSchema = Joi.object({
       ).default([]),
     })
   ).default([]),
+});
+
+export const templateValidationSchema = Joi.object({
+  name: Joi.string().required().max(100).messages({
+    'string.empty': 'Template name is required',
+    'string.max': 'Template name must not exceed 100 characters'
+  }),
+  description: Joi.string().required().max(200).messages({
+    'string.empty': 'Template description is required',
+    'string.max': 'Template description must not exceed 200 characters'
+  }),
+  category: Joi.string().valid('professional', 'creative', 'academic', 'minimalist').required().messages({
+    'string.empty': 'Template category is required',
+    'any.only': 'Invalid template category'
+  }),
+  previewImage: Joi.string().uri().optional().messages({
+    'string.uri': 'Please provide a valid preview image URL'
+  }),
+  thumbnailImage: Joi.string().uri().optional().messages({
+    'string.uri': 'Please provide a valid thumbnail image URL'
+  }),
+  config: Joi.object({
+    sections: Joi.object({
+      personalInfo: Joi.object({
+        enabled: Joi.boolean().default(true),
+        fields: Joi.array().items(Joi.string()).default([]),
+        layout: Joi.string().valid('compact', 'detailed').default('detailed'),
+        showSocialLinks: Joi.boolean().default(true),
+        socialLinksStyle: Joi.string().valid('icons', 'buttons', 'text').default('icons'),
+        maxSocialLinks: Joi.number().min(1).max(12).default(6),
+        showPhone: Joi.boolean().default(true),
+        showWebsite: Joi.boolean().default(true),
+        showLocation: Joi.boolean().default(true)
+      }).required(),
+      experience: Joi.object({
+        enabled: Joi.boolean().default(true),
+        maxItems: Joi.number().min(1).max(20).default(5),
+        showDuration: Joi.boolean().default(true),
+        showLocation: Joi.boolean().default(true),
+        showContribution: Joi.boolean().default(true),
+        showCurrent: Joi.boolean().default(true)
+      }).required(),
+      education: Joi.object({
+        enabled: Joi.boolean().default(true),
+        maxItems: Joi.number().min(1).max(10).default(3),
+        showField: Joi.boolean().default(true),
+        showCurrent: Joi.boolean().default(true)
+      }).required(),
+      skills: Joi.object({
+        enabled: Joi.boolean().default(true),
+        maxItems: Joi.number().min(1).max(50).default(20),
+        groupByCategory: Joi.boolean().default(true)
+      }).required(),
+      projects: Joi.object({
+        enabled: Joi.boolean().default(true),
+        maxItems: Joi.number().min(1).max(15).default(4),
+        showTechnologies: Joi.boolean().default(true),
+        showProjectLinks: Joi.boolean().default(true),
+        showDuration: Joi.boolean().default(true),
+        showCurrent: Joi.boolean().default(true)
+      }).required()
+    }).required(),
+    styling: Joi.object({
+      primaryColor: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).default('#8B5CF6'),
+      secondaryColor: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).default('#F3F4F6'),
+      fontFamily: Joi.string().max(50).default('Inter'),
+      layout: Joi.string().valid('single-column', 'two-column').default('single-column')
+    }).required()
+  }).required(),
+  isActive: Joi.boolean().default(true),
+  isDefault: Joi.boolean().default(false),
+  sortOrder: Joi.number().min(0).default(0)
 });

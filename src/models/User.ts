@@ -7,6 +7,11 @@ const UserSchema = new Schema<IUser>({
   name: { type: String, required: true },
   avatar: { type: String },
   username: { type: String },
+  role: { 
+    type: String, 
+    enum: ['user', 'admin'], 
+    default: 'user' 
+  },
   portfolios: [{ type: Schema.Types.ObjectId, ref: 'Portfolio' }],
   portfolioCount: { type: Number, default: 0, max: 2 },
 }, {

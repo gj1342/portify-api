@@ -16,6 +16,8 @@ interface Environment {
   CLOUDINARY_CLOUD_NAME: string;
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
+  ENABLE_ADMIN_SETUP?: string;
+  AUTHORIZED_ADMIN_EMAILS?: string;
 }
 
 const env: Environment = {
@@ -32,6 +34,8 @@ const env: Environment = {
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
+  ENABLE_ADMIN_SETUP: process.env.ENABLE_ADMIN_SETUP,
+  AUTHORIZED_ADMIN_EMAILS: process.env.AUTHORIZED_ADMIN_EMAILS,
 };
 
 export default env;
