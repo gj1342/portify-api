@@ -8,6 +8,7 @@ export const cloudinary = {
 };
 
 export const CLOUDINARY_AVATAR_FOLDER = 'portify/avatars';
+export const CLOUDINARY_TEMPLATE_FOLDER = 'portify/templates';
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 export const ALLOWED_IMAGE_MIME_REGEX = /^image\/(jpeg|jpg|png|webp|gif|avif)$/;
 

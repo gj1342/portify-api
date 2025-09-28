@@ -10,6 +10,11 @@ const PersonalInfoSchema = new Schema({
   website: { type: String },
   avatar: { type: String },
   bio: { type: String, required: true },
+  socialLinks: [{
+    platform: { type: String, required: true, enum: ['linkedin', 'github', 'twitter', 'instagram', 'facebook', 'youtube', 'tiktok', 'behance', 'dribbble', 'medium', 'devto', 'personal'] },
+    url: { type: String, required: true },
+    label: { type: String },
+  }],
 }, { _id: false });
 
 const WorkExperienceSchema = new Schema({

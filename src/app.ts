@@ -9,6 +9,7 @@ import indexRoutes from './routes/index';
 import passport from './config/passport';
 import authRoutes from './routes/auth';
 import portfolioRoutes from './routes/portfolio';
+import templateRoutes from './routes/template';
 import { swaggerSpec } from './config/swagger';
 import { globalErrorHandler } from './utils/errorHandler';
 import { ResponseHelper } from './utils/responseHelper';
@@ -67,6 +68,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 app.use('/api/v1', indexRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/portfolio', portfolioRoutes);
+app.use('/api/v1/templates', templateRoutes);
 
 app.use((req, res) => {
   ResponseHelper.notFound(res, `Route ${req.originalUrl} not found`);

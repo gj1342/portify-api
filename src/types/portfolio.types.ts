@@ -1,3 +1,9 @@
+export interface SocialLink {
+  platform: 'linkedin' | 'github' | 'twitter' | 'instagram' | 'facebook' | 'youtube' | 'tiktok' | 'behance' | 'dribbble' | 'medium' | 'devto' | 'personal';
+  url: string;
+  label?: string;
+}
+
 export interface PersonalInfo {
   fullName: string;
   title: string;
@@ -7,6 +13,7 @@ export interface PersonalInfo {
   website?: string;
   avatar?: string;
   bio: string;
+  socialLinks?: SocialLink[];
 }
 
 export interface WorkExperience {

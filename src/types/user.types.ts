@@ -1,5 +1,7 @@
 import { Document, Types } from 'mongoose';
 
+export type UserRole = 'user' | 'admin';
+
 export interface User {
   _id: Types.ObjectId;
   googleId: string;
@@ -7,6 +9,7 @@ export interface User {
   name: string;
   avatar?: string;
   username?: string;
+  role: UserRole;
   portfolios: Types.ObjectId[];
   portfolioCount: number;
   createdAt: Date;

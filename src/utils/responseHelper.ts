@@ -39,6 +39,10 @@ export class ResponseHelper {
     return this.error(res, message, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
   }
 
+  static forbidden(res: Response, message: string = ERROR_MESSAGES.FORBIDDEN) {
+    return this.error(res, message, HTTP_STATUS.FORBIDDEN, 'Forbidden');
+  }
+
   static badRequest(res: Response, message: string = ERROR_MESSAGES.VALIDATION_ERROR) {
     return this.error(res, message, HTTP_STATUS.BAD_REQUEST, 'Bad Request');
   }

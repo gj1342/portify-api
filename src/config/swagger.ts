@@ -82,6 +82,30 @@ const swaggerDefinition: SwaggerDefinition = {
         },
         required: ['success', 'timestamp'],
       },
+      SocialLink: {
+        type: 'object',
+        properties: {
+          platform: {
+            type: 'string',
+            enum: ['linkedin', 'github', 'twitter', 'instagram', 'facebook', 'youtube', 'tiktok', 'behance', 'dribbble', 'medium', 'devto', 'personal'],
+            example: 'linkedin',
+            description: 'Social media platform or custom label',
+          },
+          url: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://linkedin.com/in/johndoe',
+            description: 'Social media profile URL',
+          },
+          label: {
+            type: 'string',
+            maxLength: 50,
+            example: 'My LinkedIn',
+            description: 'Custom display label (optional, defaults to platform name)',
+          },
+        },
+        required: ['platform', 'url'],
+      },
       PersonalInfo: {
         type: 'object',
         properties: {
@@ -132,6 +156,28 @@ const swaggerDefinition: SwaggerDefinition = {
             maxLength: 500,
             example: 'Passionate software engineer with 5+ years of experience in full-stack development.',
             description: 'Professional bio or summary',
+          },
+          socialLinks: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/SocialLink',
+            },
+            example: [
+              {
+                platform: 'linkedin',
+                url: 'https://linkedin.com/in/johndoe',
+                label: 'Professional Profile'
+              },
+              {
+                platform: 'github',
+                url: 'https://github.com/johndoe'
+              },
+              {
+                platform: 'twitter',
+                url: 'https://twitter.com/johndoe'
+              }
+            ],
+            description: 'Social media links and profiles (optional)',
           },
         },
         required: ['fullName', 'title', 'location', 'email', 'bio'],
@@ -432,6 +478,246 @@ const swaggerDefinition: SwaggerDefinition = {
             items: {
               $ref: '#/components/schemas/Portfolio',
             },
+          },
+        },
+      },
+      TemplateConfig: {
+        type: 'object',
+        properties: {
+          sections: {
+            type: 'object',
+            properties: {
+              personalInfo: {
+                type: 'object',
+                properties: {
+                  enabled: { type: 'boolean', example: true },
+                  fields: { type: 'array', items: { type: 'string' } },
+                  layout: { type: 'string', enum: ['compact', 'detailed'], example: 'detailed' },
+                  showSocialLinks: { type: 'boolean', example: true },
+                  socialLinksStyle: { type: 'string', enum: ['icons', 'buttons', 'text'], example: 'icons' },
+                  maxSocialLinks: { type: 'number', example: 6 },
+                  showPhone: { type: 'boolean', example: true },
+                  showWebsite: { type: 'boolean', example: true },
+                  showLocation: { type: 'boolean', example: true }
+                }
+              },
+              experience: {
+                type: 'object',
+                properties: {
+                  enabled: { type: 'boolean', example: true },
+                  maxItems: { type: 'number', example: 5 },
+                  showDuration: { type: 'boolean', example: true },
+                  showLocation: { type: 'boolean', example: true }
+                }
+              },
+              education: {
+                type: 'object',
+                properties: {
+                  enabled: { type: 'boolean', example: true },
+                  maxItems: { type: 'number', example: 3 },
+                  showField: { type: 'boolean', example: true },
+                  showCurrent: { type: 'boolean', example: true }
+                }
+              },
+              skills: {
+                type: 'object',
+                properties: {
+                  enabled: { type: 'boolean', example: true },
+                  maxItems: { type: 'number', example: 20 },
+                  groupByCategory: { type: 'boolean', example: true }
+                }
+              },
+              projects: {
+                type: 'object',
+                properties: {
+                  enabled: { type: 'boolean', example: true },
+                  maxItems: { type: 'number', example: 4 },
+                  showTechnologies: { type: 'boolean', example: true }
+                }
+              }
+            }
+          },
+          styling: {
+            type: 'object',
+            properties: {
+              primaryColor: { type: 'string', example: '#8B5CF6' },
+              secondaryColor: { type: 'string', example: '#F3F4F6' },
+              fontFamily: { type: 'string', example: 'Inter' },
+              layout: { type: 'string', enum: ['single-column', 'two-column'], example: 'single-column' }
+            }
+          }
+        }
+      },
+      Template: {
+        type: 'object',
+        properties: {
+          _id: {
+            type: 'string',
+            example: '507f1f77bcf86cd799439011',
+            description: 'Template ID',
+          },
+          name: {
+            type: 'string',
+            maxLength: 100,
+            example: 'Professional Portfolio',
+            description: 'Template name',
+          },
+          description: {
+            type: 'string',
+            maxLength: 200,
+            example: 'A clean, professional template perfect for showcasing your career',
+            description: 'Template description',
+          },
+          category: {
+            type: 'string',
+            enum: ['professional', 'creative', 'academic', 'minimalist'],
+            example: 'professional',
+            description: 'Template category',
+          },
+          previewImage: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://res.cloudinary.com/portify/image/upload/w_800,h_600,c_fill/portify/templates/template_professional_123.jpg',
+            description: 'Template preview image URL (optional - can be uploaded later)',
+          },
+          thumbnailImage: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://res.cloudinary.com/portify/image/upload/w_300,h_225,c_fill/portify/templates/template_professional_123.jpg',
+            description: 'Template thumbnail image URL (optional - can be uploaded later)',
+          },
+          config: {
+            $ref: '#/components/schemas/TemplateConfig',
+          },
+          isActive: {
+            type: 'boolean',
+            example: true,
+            description: 'Whether the template is active',
+          },
+          isDefault: {
+            type: 'boolean',
+            example: false,
+            description: 'Whether this is the default template',
+          },
+          sortOrder: {
+            type: 'number',
+            example: 1,
+            description: 'Sort order for template display',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-15T10:30:00.000Z',
+            description: 'Template creation timestamp',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-15T10:30:00.000Z',
+            description: 'Template last update timestamp',
+          },
+        },
+        required: ['name', 'description', 'category', 'config'],
+      },
+      CreateTemplateRequest: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            maxLength: 100,
+            example: 'Professional Portfolio',
+            description: 'Template name',
+          },
+          description: {
+            type: 'string',
+            maxLength: 200,
+            example: 'A clean, professional template perfect for showcasing your career',
+            description: 'Template description',
+          },
+          category: {
+            type: 'string',
+            enum: ['professional', 'creative', 'academic', 'minimalist'],
+            example: 'professional',
+            description: 'Template category',
+          },
+          previewImage: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://res.cloudinary.com/portify/image/upload/w_800,h_600,c_fill/portify/templates/template_professional_123.jpg',
+            description: 'Template preview image URL (optional - can be uploaded later)',
+          },
+          thumbnailImage: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://res.cloudinary.com/portify/image/upload/w_300,h_225,c_fill/portify/templates/template_professional_123.jpg',
+            description: 'Template thumbnail image URL (optional - can be uploaded later)',
+          },
+          config: {
+            $ref: '#/components/schemas/TemplateConfig',
+          },
+          isDefault: {
+            type: 'boolean',
+            example: false,
+            description: 'Whether this should be the default template',
+          },
+          sortOrder: {
+            type: 'number',
+            example: 1,
+            description: 'Sort order for template display',
+          },
+        },
+        required: ['name', 'description', 'category', 'config'],
+      },
+      UpdateTemplateRequest: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            maxLength: 100,
+            example: 'Professional Portfolio',
+            description: 'Template name',
+          },
+          description: {
+            type: 'string',
+            maxLength: 200,
+            example: 'A clean, professional template perfect for showcasing your career',
+            description: 'Template description',
+          },
+          category: {
+            type: 'string',
+            enum: ['professional', 'creative', 'academic', 'minimalist'],
+            example: 'professional',
+            description: 'Template category',
+          },
+          previewImage: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://res.cloudinary.com/portify/image/upload/w_800,h_600,c_fill/portify/templates/template_professional_123.jpg',
+            description: 'Template preview image URL (optional - can be uploaded later)',
+          },
+          thumbnailImage: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://res.cloudinary.com/portify/image/upload/w_300,h_225,c_fill/portify/templates/template_professional_123.jpg',
+            description: 'Template thumbnail image URL (optional - can be uploaded later)',
+          },
+          config: {
+            $ref: '#/components/schemas/TemplateConfig',
+          },
+          isActive: {
+            type: 'boolean',
+            example: true,
+            description: 'Whether the template is active',
+          },
+          isDefault: {
+            type: 'boolean',
+            example: false,
+            description: 'Whether this should be the default template',
+          },
+          sortOrder: {
+            type: 'number',
+            example: 1,
+            description: 'Sort order for template display',
           },
         },
       },
