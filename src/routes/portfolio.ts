@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { PortfolioController } from '../controllers/portfolioController';
+import { PortfolioService } from '../services/portfolioService';
 import { validateRequest, portfolioValidationSchema } from '../utils/validation';
 import env from '../config/env';
 import { CLOUDINARY_AVATAR_FOLDER, ALLOWED_IMAGE_MIME_REGEX, MAX_IMAGE_SIZE_BYTES, signUpload } from '../config/cloudinary';
@@ -49,8 +50,8 @@ async function uploadAvatarToCloudinary(buffer: Buffer, filename: string, mimety
  * @swagger
  * /portfolio/avatar:
  *   post:
- *     summary: Upload an avatar image and get its public URL
- *     description: Accepts a multipart image file and uploads it to Cloudinary. Returns the secure URL to store in personalInfo.avatar.
+ *     summary: Upload an avatar image and update portfolio (Required Portfolio ID)
+ *     description: Uploads an avatar image to Cloudinary and automatically updates the specified portfolio's personalInfo.avatar field. Requires portfolio ID to ensure proper association.
  *     tags: [Portfolio]
  *     security:
  *       - bearerAuth: []
@@ -60,13 +61,20 @@ async function uploadAvatarToCloudinary(buffer: Buffer, filename: string, mimety
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - file
+ *               - portfolioId
  *             properties:
  *               file:
  *                 type: string
  *                 format: binary
+ *                 description: Avatar image file (JPEG, JPG, PNG, WebP, GIF, AVIF only)
+ *               portfolioId:
+ *                 type: string
+ *                 description: ID of the portfolio to update with the avatar
  *     responses:
  *       200:
- *         description: Avatar uploaded successfully
+ *         description: Avatar uploaded successfully and portfolio updated
  *         content:
  *           application/json:
  *             schema:
@@ -77,7 +85,7 @@ async function uploadAvatarToCloudinary(buffer: Buffer, filename: string, mimety
  *                 publicId:
  *                   type: string
  *       400:
- *         description: Invalid file
+ *         description: Bad request - No file provided, missing portfolio ID, or invalid file type
  *       401:
  *         description: Unauthorized
  *       500:
@@ -85,12 +93,55 @@ async function uploadAvatarToCloudinary(buffer: Buffer, filename: string, mimety
  */
 router.post('/avatar', authenticateToken, upload.single('file'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ success: false, error: 'No file provided' });
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No file provided' });
+    }
+
+    const { portfolioId } = req.body;
+    if (!portfolioId) {
+      return res.status(400).json({ success: false, error: 'Portfolio ID is required' });
+    }
+
     const { buffer, originalname, mimetype } = req.file;
     const { secure_url, public_id } = await uploadAvatarToCloudinary(buffer, originalname, mimetype);
-    return res.json({ secureUrl: secure_url, publicId: public_id });
+    
+    let updatedPortfolio = null;
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader && authHeader.split(' ')[1];
+      
+      if (token) {
+        const { verifyToken } = require('../utils/jwt');
+        const decoded = verifyToken(token);
+        
+        updatedPortfolio = await PortfolioService.updatePortfolio(
+          decoded.sub, 
+          portfolioId, 
+          { personalInfo: { avatar: secure_url } } as any
+        );
+      }
+    } catch (portfolioError) {
+      console.warn('Portfolio update failed:', portfolioError);
+    }
+    
+    return res.json({
+      success: true,
+      data: {
+        publicId: public_id,
+        originalUrl: secure_url,
+        ...(updatedPortfolio && { updatedPortfolio })
+      },
+      message: updatedPortfolio 
+        ? 'Avatar uploaded and portfolio updated successfully'
+        : 'Avatar uploaded successfully. Portfolio update failed.',
+      timestamp: new Date().toISOString()
+    });
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message || 'Upload failed' });
+    return res.status(500).json({ 
+      success: false, 
+      error: err.message || 'Upload failed',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -462,5 +513,94 @@ router.get(
   authenticateToken,
   PortfolioController.checkSlugAvailability
 );
+
+/**
+ * @swagger
+ * /portfolio/template/{templateId}:
+ *   get:
+ *     summary: Get all portfolios using a specific template
+ *     description: Retrieve all public portfolios that use the specified template
+ *     tags: [Portfolio]
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Template ID
+ *     responses:
+ *       200:
+ *         description: Portfolios fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Success'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Portfolio'
+ *       400:
+ *         description: Bad request - Missing template ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Template not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/template/:templateId', PortfolioController.getPortfoliosByTemplate);
+
+/**
+ * @swagger
+ * /portfolio/{portfolioId}/with-template:
+ *   get:
+ *     summary: Get portfolio with template information
+ *     description: Retrieve a portfolio along with its template details
+ *     tags: [Portfolio]
+ *     parameters:
+ *       - in: path
+ *         name: portfolioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Portfolio ID
+ *     responses:
+ *       200:
+ *         description: Portfolio with template fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Success'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       allOf:
+ *                         - $ref: '#/components/schemas/Portfolio'
+ *                         - type: object
+ *                           properties:
+ *                             templateId:
+ *                               $ref: '#/components/schemas/Template'
+ *       400:
+ *         description: Bad request - Missing portfolio ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Portfolio not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/:portfolioId/with-template', PortfolioController.getPortfolioWithTemplate);
 
 export default router;

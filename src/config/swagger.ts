@@ -369,6 +369,11 @@ const swaggerDefinition: SwaggerDefinition = {
             example: '507f1f77bcf86cd799439012',
             description: 'User ID who owns this portfolio',
           },
+          templateId: {
+            type: 'string',
+            example: '507f1f77bcf86cd799439013',
+            description: 'Template ID used for this portfolio',
+          },
           name: {
             type: 'string',
             maxLength: 100,

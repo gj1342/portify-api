@@ -78,4 +78,26 @@ export class PortfolioController {
     const result = await PortfolioService.deletePortfolio(user._id.toString(), portfolioId);
     return ResponseHelper.success(res, result, SUCCESS_MESSAGES.PORTFOLIO_DELETED);
   });
+
+  static getPortfoliosByTemplate = asyncHandler(async (req: Request, res: Response) => {
+    const { templateId } = req.params;
+    
+    if (!templateId) {
+      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    }
+
+    const portfolios = await PortfolioService.getPortfoliosByTemplate(templateId);
+    return ResponseHelper.success(res, portfolios, 'Portfolios fetched successfully');
+  });
+
+  static getPortfolioWithTemplate = asyncHandler(async (req: Request, res: Response) => {
+    const { portfolioId } = req.params;
+    
+    if (!portfolioId) {
+      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    }
+
+    const portfolio = await PortfolioService.getPortfolioWithTemplate(portfolioId);
+    return ResponseHelper.success(res, portfolio, 'Portfolio with template fetched successfully');
+  });
 }

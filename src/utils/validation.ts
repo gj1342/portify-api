@@ -45,6 +45,9 @@ export const portfolioValidationSchema = Joi.object({
     'string.empty': 'Portfolio name is required',
     'string.max': 'Portfolio name must not exceed 100 characters'
   }),
+  templateId: Joi.string().required().messages({
+    'string.empty': 'Template ID is required'
+  }),
   description: Joi.string().max(200).optional().allow('').messages({
     'string.max': 'Portfolio description must not exceed 200 characters'
   }),

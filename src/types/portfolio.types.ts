@@ -61,6 +61,7 @@ import { Types } from 'mongoose';
 export interface PortfolioData {
   _id?: string;
   userId: Types.ObjectId;
+  templateId: Types.ObjectId;
   name: string;
   description?: string;
   slug: string;
