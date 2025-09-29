@@ -56,6 +56,7 @@ const SkillSchema = new Schema({
 
 const PortfolioSchema = new Schema<PortfolioData>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  templateId: { type: Schema.Types.ObjectId, ref: 'Template', required: true },
   name: { type: String, required: true, maxlength: 100 },
   description: { type: String, maxlength: 200 },
   slug: { type: String, required: true },
@@ -71,6 +72,7 @@ const PortfolioSchema = new Schema<PortfolioData>({
 });
 
 PortfolioSchema.index({ userId: 1 });
+PortfolioSchema.index({ templateId: 1 });
 PortfolioSchema.index({ slug: 1 }, { unique: true });
 PortfolioSchema.index({ isPublic: 1 });
 
