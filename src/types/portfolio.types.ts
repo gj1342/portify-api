@@ -1,58 +1,55 @@
+import { PersonalInfo as SharedPersonalInfo, WorkExperience as SharedWorkExperience, Education as SharedEducation, Project as SharedProject, Skill as SharedSkill } from './shared.types';
+
 export interface SocialLink {
   platform: 'linkedin' | 'github' | 'twitter' | 'instagram' | 'facebook' | 'youtube' | 'tiktok' | 'behance' | 'dribbble' | 'medium' | 'devto' | 'personal';
   url: string;
   label?: string;
 }
 
-export interface PersonalInfo {
-  fullName: string;
-  title: string;
-  location: string;
-  email: string;
-  phone?: string;
-  website?: string;
-  avatar?: string;
-  bio: string;
+export interface PersonalInfo extends SharedPersonalInfo {
+  fullName: string;        // Required in portfolio
+  jobTitle: string;        // Required in portfolio (was 'title')
+  location: string;        // Required in portfolio
+  email: string;           // Required in portfolio
+  about: string;           // Required in portfolio (was 'bio')
   socialLinks?: SocialLink[];
 }
 
-export interface WorkExperience {
+export interface WorkExperience extends SharedWorkExperience {
   id: string;
-  company: string;
-  position: string;
-  location: string;
-  startDate: string;
-  endDate?: string;
-  current: boolean;
-  contribution: string[];
+  company: string;         // Required in portfolio
+  position: string;        // Required in portfolio
+  location: string;        // Required in portfolio
+  startDate: string;       // Required in portfolio (combined from startMonth + startYear)
+  endDate?: string;        // Combined from endMonth + endYear
+  current: boolean;        // Required in portfolio
+  contribution: string[];  // Required in portfolio (was 'achievements')
 }
 
-export interface Education {
+export interface Education extends SharedEducation {
   id: string;
-  institution: string;
-  degree: string;
-  field: string;
-  startDate: string;
-  endDate?: string;
-  current: boolean;
+  institution: string;     // Required in portfolio
+  degree: string;          // Required in portfolio
+  field: string;           // Required in portfolio
+  startDate: string;       // Required in portfolio (combined from startYear)
+  endDate?: string;        // Combined from endYear
+  current: boolean;        // Required in portfolio
 }
 
-export interface Project {
+export interface Project extends SharedProject {
   id: string;
-  name: string;
-  description: string;
-  technologies: string[];
-  startDate: string;
-  endDate?: string;
-  current: boolean;
+  name: string;            // Required in portfolio
+  description: string;     // Required in portfolio
+  startDate: string;       // Required in portfolio
+  current: boolean;        // Required in portfolio
   links?: Array<{
     label?: string;
     url: string;
   }>;
 }
 
-export interface Skill {
-  name: string;
+export interface Skill extends SharedSkill {
+  name: string;            // Required in portfolio (single skill name)
   category?: string;
 }
 

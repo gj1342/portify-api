@@ -1,57 +1,29 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { PortfolioData } from '../types/portfolio.types';
+import { 
+  PersonalInfoSchema, 
+  WorkExperienceSchema, 
+  EducationSchema, 
+  ProjectSchema, 
+  SkillSchema 
+} from '../schemas/sharedSchemas';
 
-const PersonalInfoSchema = new Schema({
+const SocialLinkSchema = new Schema({
+  platform: { type: String, required: true, enum: ['linkedin', 'github', 'twitter', 'instagram', 'facebook', 'youtube', 'tiktok', 'behance', 'dribbble', 'medium', 'devto', 'personal'] },
+  url: { type: String, required: true },
+  label: { type: String },
+}, { _id: false });
+
+const PortfolioPersonalInfoSchema = new Schema({
   fullName: { type: String, required: true },
-  title: { type: String, required: true },
+  jobTitle: { type: String, required: true },
   location: { type: String, required: true },
   email: { type: String, required: true },
   phone: { type: String },
   website: { type: String },
   avatar: { type: String },
-  bio: { type: String, required: true },
-  socialLinks: [{
-    platform: { type: String, required: true, enum: ['linkedin', 'github', 'twitter', 'instagram', 'facebook', 'youtube', 'tiktok', 'behance', 'dribbble', 'medium', 'devto', 'personal'] },
-    url: { type: String, required: true },
-    label: { type: String },
-  }],
-}, { _id: false });
-
-const WorkExperienceSchema = new Schema({
-  company: { type: String, required: true },
-  position: { type: String, required: true },
-  location: { type: String, required: true },
-  startDate: { type: String, required: true },
-  endDate: { type: String },
-  current: { type: Boolean, default: false },
-  contribution: [{ type: String }],
-}, { _id: false });
-
-const EducationSchema = new Schema({
-  institution: { type: String, required: true },
-  degree: { type: String, required: true },
-  field: { type: String, required: true },
-  startDate: { type: String, required: true },
-  endDate: { type: String },
-  current: { type: Boolean, default: false },
-}, { _id: false });
-
-const ProjectSchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  technologies: [{ type: String }],
-  startDate: { type: String, required: true },
-  endDate: { type: String },
-  current: { type: Boolean, default: false },
-  links: [{
-    label: { type: String },
-    url: { type: String, required: true }
-  }],
-}, { _id: false });
-
-const SkillSchema = new Schema({
-  name: { type: String, required: true },
-  category: { type: String },
+  about: { type: String, required: true },
+  socialLinks: [SocialLinkSchema],
 }, { _id: false });
 
 const PortfolioSchema = new Schema<PortfolioData>({
@@ -62,7 +34,7 @@ const PortfolioSchema = new Schema<PortfolioData>({
   slug: { type: String, required: true },
   isPublic: { type: Boolean, default: true },
   viewCount: { type: Number, default: 0 },
-  personalInfo: { type: PersonalInfoSchema, required: true },
+  personalInfo: { type: PortfolioPersonalInfoSchema, required: true },
   experience: [WorkExperienceSchema],
   education: [EducationSchema],
   skills: [SkillSchema],

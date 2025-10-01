@@ -8,6 +8,9 @@ import {
 } from '../types/template.types';
 import { AppError } from '../utils/errorHandler';
 import { ERROR_MESSAGES } from '../constants/httpStatus';
+import { CLOUDINARY_TEMPLATE_FOLDER, signUpload } from '../config/cloudinary';
+import env from '../config/env';
+import crypto from 'crypto';
 
 export class TemplateService {
   static async getAllTemplates(filters: TemplateFilters = {}): Promise<TemplateListResponse> {
@@ -182,5 +185,68 @@ export class TemplateService {
     } catch (error) {
       throw new AppError('Failed to fetch template categories', 500);
     }
+  }
+
+  static async uploadTemplateImage(buffer: Buffer, filename: string, mimetype: string, templateId?: string) {
+    try {
+      const { secure_url, public_id } = await this.uploadToCloudinary(buffer, filename, mimetype);
+      
+      const baseUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload`;
+      
+      const imageData = {
+        publicId: public_id,
+        originalUrl: secure_url,
+        previewUrl: `${baseUrl}/c_limit,w_800,h_600,f_auto,q_auto/${public_id}`,
+        thumbnailUrl: `${baseUrl}/c_limit,w_300,h_300,f_auto,q_auto/${public_id}`
+      };
+
+      let updatedTemplate = null;
+      if (templateId) {
+        try {
+          updatedTemplate = await this.updateTemplate(templateId, {
+            previewImage: imageData.previewUrl,
+            thumbnailImage: imageData.thumbnailUrl
+          });
+        } catch (templateError) {
+          console.warn('Template update failed:', templateError);
+        }
+      }
+
+      return {
+        ...imageData,
+        ...(updatedTemplate && { updatedTemplate })
+      };
+    } catch (error) {
+      throw new AppError('Failed to upload template image', 500);
+    }
+  }
+
+  private static async uploadToCloudinary(buffer: Buffer, filename: string, mimetype: string) {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const folder = CLOUDINARY_TEMPLATE_FOLDER;
+    const publicId = `template_${timestamp}_${crypto.randomBytes(8).toString('hex')}`;
+    const signature = signUpload({ folder, public_id: publicId, timestamp } as any);
+
+    const blob = new Blob([buffer], { type: mimetype });
+    const form = new FormData();
+    form.append('file', blob, filename);
+    form.append('api_key', env.CLOUDINARY_API_KEY);
+    form.append('timestamp', String(timestamp));
+    form.append('signature', signature);
+    form.append('folder', folder);
+    form.append('public_id', publicId);
+
+    const res = await (globalThis as any).fetch(`https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: form as any,
+    });
+    
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text);
+    }
+    
+    const json = await res.json() as { secure_url: string; public_id: string };
+    return json;
   }
 }

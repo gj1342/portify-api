@@ -1,6 +1,9 @@
 import { Document, Types } from 'mongoose';
+import { PortfolioData } from './shared.types';
 
 export type UserRole = 'user' | 'admin';
+
+export type UserPortfolioData = PortfolioData;
 
 export interface User {
   _id: Types.ObjectId;
@@ -12,6 +15,8 @@ export interface User {
   role: UserRole;
   portfolios: Types.ObjectId[];
   portfolioCount: number;
+  profileData?: UserPortfolioData;
+  onboardingCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

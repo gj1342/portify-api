@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
-import { User as IUser } from '../types/user.types';
+import { User as IUser, UserPortfolioData } from '../types/user.types';
+import { PortfolioDataSchema } from '../schemas/sharedSchemas';
 
 const UserSchema = new Schema<IUser>({
   googleId: { type: String, required: true },
@@ -14,6 +15,8 @@ const UserSchema = new Schema<IUser>({
   },
   portfolios: [{ type: Schema.Types.ObjectId, ref: 'Portfolio' }],
   portfolioCount: { type: Number, default: 0, max: 2 },
+  profileData: PortfolioDataSchema,
+  onboardingCompleted: { type: Boolean, default: false },
 }, {
   timestamps: true,
 });
@@ -31,3 +34,4 @@ UserSchema.pre('save', function(next) {
 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);
+export type UserDocument = IUser & Document;

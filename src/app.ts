@@ -8,6 +8,7 @@ import env from './config/env';
 import indexRoutes from './routes/index';
 import passport from './config/passport';
 import authRoutes from './routes/auth';
+import userRoutes from './routes/userRoutes';
 import portfolioRoutes from './routes/portfolio';
 import templateRoutes from './routes/template';
 import { swaggerSpec } from './config/swagger';
@@ -67,6 +68,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 // API Routes
 app.use('/api/v1', indexRoutes);
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/portfolio', portfolioRoutes);
 app.use('/api/v1/templates', templateRoutes);
 
