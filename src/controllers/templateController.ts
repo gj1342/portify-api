@@ -86,5 +86,22 @@ export class TemplateController {
     
     return ResponseHelper.success(res, result, 'Template deleted successfully');
   });
+
+  static uploadTemplateImage = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.file) {
+      throw new AppError('No file provided', 400);
+    }
+
+    const { buffer, originalname, mimetype } = req.file;
+    const { templateId } = req.body;
+    
+    const result = await TemplateService.uploadTemplateImage(buffer, originalname, mimetype, templateId);
+    
+    const message = templateId 
+      ? 'Template image uploaded and template updated successfully'
+      : 'Template image uploaded successfully. Use originalUrl for full size, previewUrl for medium size, and thumbnailUrl for small size.';
+
+    return ResponseHelper.success(res, result, message);
+  });
 }
 

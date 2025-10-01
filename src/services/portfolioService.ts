@@ -2,6 +2,7 @@ import { Portfolio } from '../models/Portfolio';
 import { User } from '../models/User';
 import { Template } from '../models/Template';
 import { PortfolioData } from '../types/portfolio.types';
+import { UserPortfolioData } from '../types/user.types';
 import { AppError } from '../utils/errorHandler';
 import { ERROR_MESSAGES } from '../constants/httpStatus';
 import { SlugGenerator } from '../utils/slugGenerator';
@@ -60,6 +61,102 @@ export class PortfolioService {
     await User.findByIdAndUpdate(userId, {
       $push: { portfolios: portfolio._id },
       $inc: { portfolioCount: 1 }
+    });
+
+    return portfolio;
+  }
+
+  static async createPortfolioFromProfile(
+    userId: string, 
+    templateId: string, 
+    name: string, 
+    profileData: UserPortfolioData
+  ) {
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, 404);
+    }
+
+    if (user.portfolioCount >= 2) {
+      throw new AppError('Users can only create up to 2 portfolios', 400);
+    }
+
+    const template = await Template.findById(templateId);
+    
+    if (!template) {
+      throw new AppError('Template not found', 404);
+    }
+
+    if (!template.isActive) {
+      throw new AppError('Template is not active', 400);
+    }
+
+    const slug = await SlugGenerator.generateUniqueSlug(name);
+
+    const portfolioData: PortfolioData = {
+      name,
+      slug,
+      description: profileData.personalInfo.about || '',
+      templateId: new Types.ObjectId(templateId),
+      userId: user._id,
+      isPublic: true,
+      viewCount: 0,
+      personalInfo: {
+        fullName: profileData.personalInfo.fullName || user.name,
+        jobTitle: profileData.personalInfo.jobTitle || '',
+        location: profileData.personalInfo.location || '',
+        email: profileData.personalInfo.email || user.email,
+        phone: profileData.personalInfo.phone,
+        website: profileData.personalInfo.website,
+        avatar: user.avatar,
+        about: profileData.personalInfo.about || '',
+      },
+      experience: profileData.experience.map(exp => ({
+        id: new Types.ObjectId().toString(),
+        company: exp.company || '',
+        position: exp.position || '',
+        location: exp.location || '',
+        startDate: exp.startMonth && exp.startYear ? `${exp.startMonth} ${exp.startYear}` : '',
+        endDate: exp.endMonth && exp.endYear ? `${exp.endMonth} ${exp.endYear}` : undefined,
+        current: exp.current || false,
+        contribution: exp.achievements || [],
+      })),
+      education: profileData.education.map(edu => ({
+        id: new Types.ObjectId().toString(),
+        institution: edu.institution || '',
+        degree: edu.degree || '',
+        field: edu.field || '',
+        startDate: edu.startYear || '',
+        endDate: edu.endYear,
+        current: edu.current || false,
+      })),
+      projects: profileData.projects.map(proj => ({
+        id: new Types.ObjectId().toString(),
+        name: proj.name || '',
+        description: proj.description || '',
+        technologies: proj.technologies || [],
+        startDate: proj.startDate || '',
+        endDate: proj.endDate,
+        current: !proj.endDate,
+        links: (proj.links || []).map(link => ({
+          url: link,
+          label: link.includes('github') ? 'GitHub' : link.includes('demo') ? 'Demo' : 'Website'
+        })),
+      })),
+      skills: profileData.skills.flatMap(skill => 
+        (skill.skills || []).map(skillName => ({
+          name: skillName || '',
+          category: skill.category || '',
+        }))
+      ),
+    };
+
+    const portfolio = await Portfolio.create(portfolioData);
+
+    await User.findByIdAndUpdate(userId, {
+      $push: { portfolios: portfolio._id },
+      $inc: { portfolioCount: 1 },
     });
 
     return portfolio;

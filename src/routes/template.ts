@@ -3,10 +3,8 @@ import { TemplateController } from '../controllers/templateController';
 import { TemplateService } from '../services/templateService';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import { validateRequest, templateValidationSchema } from '../utils/validation';
-import { CLOUDINARY_TEMPLATE_FOLDER, ALLOWED_IMAGE_MIME_REGEX, MAX_IMAGE_SIZE_BYTES, signUpload } from '../config/cloudinary';
-import env from '../config/env';
+import { ALLOWED_IMAGE_MIME_REGEX, MAX_IMAGE_SIZE_BYTES } from '../config/cloudinary';
 import multer from 'multer';
-import crypto from 'crypto';
 
 const router = Router();
 
@@ -22,32 +20,6 @@ const upload = multer({
   },
 });
 
-async function uploadTemplateImageToCloudinary(buffer: Buffer, filename: string, mimetype: string) {
-  const timestamp = Math.floor(Date.now() / 1000);
-  const folder = CLOUDINARY_TEMPLATE_FOLDER;
-  const publicId = `template_${filename.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40)}_${timestamp}`;
-  const signature = signUpload({ folder, public_id: publicId, timestamp } as any);
-
-  const blob = new Blob([buffer], { type: mimetype });
-  const form = new FormData();
-  form.append('file', blob, filename);
-  form.append('api_key', env.CLOUDINARY_API_KEY);
-  form.append('timestamp', String(timestamp));
-  form.append('signature', signature);
-  form.append('folder', folder);
-  form.append('public_id', publicId);
-
-  const res = await (globalThis as any).fetch(`https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/image/upload`, {
-    method: 'POST',
-    body: form as any,
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text);
-  }
-  const json = await res.json() as { secure_url: string; public_id: string };
-  return json;
-}
 
 /**
  * @swagger
@@ -119,57 +91,7 @@ async function uploadTemplateImageToCloudinary(buffer: Buffer, filename: string,
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/upload-image', authenticateToken, requireAdmin, upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: 'No file provided' });
-    }
-
-    const { buffer, originalname, mimetype } = req.file;
-    const { templateId } = req.body; 
-    
-    const { secure_url, public_id } = await uploadTemplateImageToCloudinary(buffer, originalname, mimetype);
-    
-    const baseUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload`;
-    
-    const imageData = {
-      publicId: public_id,
-      originalUrl: secure_url,
-      previewUrl: `${baseUrl}/c_limit,w_800,h_600,f_auto,q_auto/${public_id}`,
-      thumbnailUrl: `${baseUrl}/c_limit,w_300,h_300,f_auto,q_auto/${public_id}`
-    };
-
-    let updatedTemplate = null;
-    if (templateId) {
-      try {
-        updatedTemplate = await TemplateService.updateTemplate(templateId, {
-          previewImage: imageData.previewUrl,
-          thumbnailImage: imageData.thumbnailUrl
-        });
-      } catch (templateError) {
-        console.warn('Template update failed:', templateError);
-      }
-    }
-    
-    return res.json({
-      success: true,
-      data: {
-        ...imageData,
-        ...(updatedTemplate && { updatedTemplate })
-      },
-      message: templateId 
-        ? 'Template image uploaded and template updated successfully'
-        : 'Template image uploaded successfully. Use originalUrl for full size, previewUrl for medium size, and thumbnailUrl for small size.',
-      timestamp: new Date().toISOString()
-    });
-  } catch (err: any) {
-    return res.status(500).json({ 
-      success: false, 
-      error: err.message || 'Upload failed',
-      timestamp: new Date().toISOString()
-    });
-  }
-});
+router.post('/upload-image', authenticateToken, requireAdmin, upload.single('file'), TemplateController.uploadTemplateImage);
 
 /**
  * @swagger

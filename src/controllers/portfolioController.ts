@@ -22,13 +22,22 @@ export class PortfolioController {
       throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
     }
 
-    const portfolioData = req.body;
+    const { templateId, name } = req.body;
     
-    if (!portfolioData || Object.keys(portfolioData).length === 0) {
-      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    if (!templateId || !name) {
+      throw new AppError('Template ID and portfolio name are required', 400);
     }
 
-    const portfolio = await PortfolioService.createPortfolio(user._id.toString(), portfolioData);
+    if (!user.profileData) {
+      throw new AppError('User profile data not found. Please complete onboarding first.', 400);
+    }
+
+    const portfolio = await PortfolioService.createPortfolioFromProfile(
+      user._id.toString(), 
+      templateId, 
+      name, 
+      user.profileData
+    );
     return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_CREATED);
   });
 
