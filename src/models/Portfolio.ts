@@ -1,64 +1,51 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { PortfolioData } from '../types/portfolio.types';
+import { 
+  PersonalInfoSchema, 
+  WorkExperienceSchema, 
+  EducationSchema, 
+  ProjectSchema, 
+  SkillSchema 
+} from '../schemas/sharedSchemas';
 
-const PersonalInfoSchema = new Schema({
+const SocialLinkSchema = new Schema({
+  platform: { type: String, required: true, enum: ['linkedin', 'github', 'twitter', 'instagram', 'facebook', 'youtube', 'tiktok', 'behance', 'dribbble', 'medium', 'devto', 'personal'] },
+  url: { type: String, required: true },
+  label: { type: String },
+}, { _id: false });
+
+const PortfolioPersonalInfoSchema = new Schema({
   fullName: { type: String, required: true },
-  title: { type: String, required: true },
+  jobTitle: { type: String, required: true },
   location: { type: String, required: true },
   email: { type: String, required: true },
   phone: { type: String },
   website: { type: String },
-  summary: { type: String, required: true },
-}, { _id: false });
-
-const WorkExperienceSchema = new Schema({
-  company: { type: String, required: true },
-  position: { type: String, required: true },
-  location: { type: String, required: true },
-  startDate: { type: String, required: true },
-  endDate: { type: String },
-  current: { type: Boolean, default: false },
-  description: { type: String, required: true },
-  achievements: [{ type: String }],
-}, { _id: false });
-
-const EducationSchema = new Schema({
-  institution: { type: String, required: true },
-  degree: { type: String, required: true },
-  field: { type: String, required: true },
-  startDate: { type: String, required: true },
-  endDate: { type: String },
-  current: { type: Boolean, default: false },
-  gpa: { type: String },
-  achievements: [{ type: String }],
-}, { _id: false });
-
-const ProjectSchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  technologies: [{ type: String }],
-  startDate: { type: String, required: true },
-  endDate: { type: String },
-  current: { type: Boolean, default: false },
-  url: { type: String },
-  github: { type: String },
-}, { _id: false });
-
-const CustomizationsSchema = new Schema({
-  template: { type: String, default: 'default' },
-  colorScheme: { type: String, default: 'blue' },
-  fontFamily: { type: String, default: 'inter' },
+  avatar: { type: String },
+  about: { type: String, required: true },
+  socialLinks: [SocialLinkSchema],
 }, { _id: false });
 
 const PortfolioSchema = new Schema<PortfolioData>({
-  personalInfo: { type: PersonalInfoSchema, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  templateId: { type: Schema.Types.ObjectId, ref: 'Template', required: true },
+  name: { type: String, required: true, maxlength: 100 },
+  description: { type: String, maxlength: 200 },
+  slug: { type: String, required: true },
+  isPublic: { type: Boolean, default: true },
+  viewCount: { type: Number, default: 0 },
+  personalInfo: { type: PortfolioPersonalInfoSchema, required: true },
   experience: [WorkExperienceSchema],
   education: [EducationSchema],
-  skills: [{ type: String }],
+  skills: [SkillSchema],
   projects: [ProjectSchema],
-  customizations: { type: CustomizationsSchema, default: () => ({}) },
 }, {
   timestamps: true,
 });
+
+PortfolioSchema.index({ userId: 1 });
+PortfolioSchema.index({ templateId: 1 });
+PortfolioSchema.index({ slug: 1 }, { unique: true });
+PortfolioSchema.index({ isPublic: 1 });
 
 export const Portfolio = mongoose.model<PortfolioData>('Portfolio', PortfolioSchema);

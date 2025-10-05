@@ -3,7 +3,7 @@ import { PortfolioService } from '../services/portfolioService';
 import { ResponseHelper } from '../utils/responseHelper';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../constants/httpStatus';
 import { asyncHandler, AppError } from '../utils/errorHandler';
-import { UserDocument } from '../types/userDocument.types';
+import { UserDocument } from '../types/user.types';
 
 export class PortfolioController {
   static getUserProfile = asyncHandler(async (req: Request, res: Response) => {
@@ -16,19 +16,108 @@ export class PortfolioController {
     return ResponseHelper.success(res, userProfile, SUCCESS_MESSAGES.PROFILE_RETRIEVED);
   });
 
-  static updateUserPortfolio = asyncHandler(async (req: Request, res: Response) => {
+  static createPortfolio = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user as UserDocument;
     if (!user) {
       throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
     }
 
-    const { portfolioData } = req.body;
+    const { templateId, name } = req.body;
     
-    if (!portfolioData) {
+    if (!templateId || !name) {
+      throw new AppError('Template ID and portfolio name are required', 400);
+    }
+
+    if (!user.profileData) {
+      throw new AppError('User profile data not found. Please complete onboarding first.', 400);
+    }
+
+    const portfolio = await PortfolioService.createPortfolioFromProfile(
+      user._id.toString(), 
+      templateId, 
+      name, 
+      user.profileData
+    );
+    return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_CREATED);
+  });
+
+  static updatePortfolio = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as UserDocument;
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
+    }
+
+    const { portfolioId } = req.params;
+    const portfolioData = req.body;
+    
+    if (!portfolioData || Object.keys(portfolioData).length === 0) {
       throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
     }
 
-    const portfolio = await PortfolioService.updateUserPortfolio(user._id.toString(), portfolioData);
+    const portfolio = await PortfolioService.updatePortfolio(user._id.toString(), portfolioId, portfolioData);
     return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_UPDATED);
+  });
+
+  static getPortfolio = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as UserDocument;
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
+    }
+
+    const { portfolioId } = req.params;
+    const portfolio = await PortfolioService.getPortfolio(user._id.toString(), portfolioId);
+    return ResponseHelper.success(res, portfolio, SUCCESS_MESSAGES.PORTFOLIO_RETRIEVED);
+  });
+
+  static checkSlugAvailability = asyncHandler(async (req: Request, res: Response) => {
+    const { slug } = req.params;
+    const { portfolioId } = req.query;
+    
+    const isAvailable = await PortfolioService.checkSlugAvailability(slug, portfolioId as string);
+    return ResponseHelper.success(res, { slug, isAvailable }, 'Slug availability checked');
+  });
+
+  static deletePortfolio = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as UserDocument;
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
+    }
+
+    const { portfolioId } = req.params;
+    const result = await PortfolioService.deletePortfolio(user._id.toString(), portfolioId);
+    return ResponseHelper.success(res, result, SUCCESS_MESSAGES.PORTFOLIO_DELETED);
+  });
+
+  static getPortfoliosByTemplate = asyncHandler(async (req: Request, res: Response) => {
+    const { templateId } = req.params;
+    
+    if (!templateId) {
+      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    }
+
+    const portfolios = await PortfolioService.getPortfoliosByTemplate(templateId);
+    return ResponseHelper.success(res, portfolios, 'Portfolios fetched successfully');
+  });
+
+  static getPortfolioWithTemplate = asyncHandler(async (req: Request, res: Response) => {
+    const { portfolioId } = req.params;
+    
+    if (!portfolioId) {
+      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    }
+
+    const portfolio = await PortfolioService.getPortfolioWithTemplate(portfolioId);
+    return ResponseHelper.success(res, portfolio, 'Portfolio with template fetched successfully');
+  });
+
+  static getPublicPortfolioBySlug = asyncHandler(async (req: Request, res: Response) => {
+    const { slug } = req.params;
+    
+    if (!slug) {
+      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    }
+
+    const portfolio = await PortfolioService.getPublicPortfolioBySlug(slug);
+    return ResponseHelper.success(res, portfolio, 'Public portfolio fetched successfully');
   });
 }

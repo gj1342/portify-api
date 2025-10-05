@@ -3,11 +3,15 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import swaggerUi from 'swagger-ui-express';
 import env from './config/env';
 import indexRoutes from './routes/index';
 import passport from './config/passport';
 import authRoutes from './routes/auth';
+import userRoutes from './routes/userRoutes';
 import portfolioRoutes from './routes/portfolio';
+import templateRoutes from './routes/template';
+import { swaggerSpec } from './config/swagger';
 import { globalErrorHandler } from './utils/errorHandler';
 import { ResponseHelper } from './utils/responseHelper';
 
@@ -46,9 +50,27 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use(passport.initialize());
+
+// Swagger UI Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Portify API Documentation',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+  },
+}));
+
+// API Routes
 app.use('/api/v1', indexRoutes);
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/portfolio', portfolioRoutes);
+app.use('/api/v1/templates', templateRoutes);
 
 app.use((req, res) => {
   ResponseHelper.notFound(res, `Route ${req.originalUrl} not found`);
