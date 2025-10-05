@@ -16,7 +16,6 @@ export interface WorkExperience {
   startYear?: string;
   endMonth?: string;
   endYear?: string;
-  description?: string;
   location?: string;
   achievements?: string[];
   current?: boolean;
@@ -35,9 +34,15 @@ export interface Project {
   name?: string;
   description?: string;
   technologies?: string[];
-  startDate?: string;
-  endDate?: string;
-  links?: string[];
+  startMonth?: string;
+  startYear?: string;
+  endMonth?: string;
+  endYear?: string;
+  current?: boolean;
+  links?: Array<{
+    label?: string;
+    url: string;
+  }>;
 }
 
 export interface Skill {

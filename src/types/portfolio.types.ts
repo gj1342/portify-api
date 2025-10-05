@@ -8,10 +8,10 @@ export interface SocialLink {
 
 export interface PersonalInfo extends SharedPersonalInfo {
   fullName: string;        // Required in portfolio
-  jobTitle: string;        // Required in portfolio (was 'title')
+  jobTitle: string;        // Required in portfolio (matches frontend)
   location: string;        // Required in portfolio
   email: string;           // Required in portfolio
-  about: string;           // Required in portfolio (was 'bio')
+  about: string;           // Required in portfolio (matches frontend)
   socialLinks?: SocialLink[];
 }
 
@@ -20,10 +20,12 @@ export interface WorkExperience extends SharedWorkExperience {
   company: string;         // Required in portfolio
   position: string;        // Required in portfolio
   location: string;        // Required in portfolio
-  startDate: string;       // Required in portfolio (combined from startMonth + startYear)
-  endDate?: string;        // Combined from endMonth + endYear
+  startMonth: string;      // Required in portfolio (matches frontend)
+  startYear: string;       // Required in portfolio (matches frontend)
+  endMonth?: string;       // Optional (matches frontend)
+  endYear?: string;        // Optional (matches frontend)
   current: boolean;        // Required in portfolio
-  contribution: string[];  // Required in portfolio (was 'achievements')
+  achievements: string[];  // Required in portfolio (matches frontend)
 }
 
 export interface Education extends SharedEducation {
@@ -31,8 +33,8 @@ export interface Education extends SharedEducation {
   institution: string;     // Required in portfolio
   degree: string;          // Required in portfolio
   field: string;           // Required in portfolio
-  startDate: string;       // Required in portfolio (combined from startYear)
-  endDate?: string;        // Combined from endYear
+  startYear: string;       // Required in portfolio (matches frontend)
+  endYear?: string;        // Optional (matches frontend)
   current: boolean;        // Required in portfolio
 }
 
@@ -40,7 +42,10 @@ export interface Project extends SharedProject {
   id: string;
   name: string;            // Required in portfolio
   description: string;     // Required in portfolio
-  startDate: string;       // Required in portfolio
+  startMonth?: string;     // Optional in portfolio (matches frontend)
+  startYear?: string;      // Optional in portfolio (matches frontend)
+  endMonth?: string;       // Optional in portfolio (matches frontend)
+  endYear?: string;        // Optional in portfolio (matches frontend)
   current: boolean;        // Required in portfolio
   links?: Array<{
     label?: string;
@@ -49,8 +54,8 @@ export interface Project extends SharedProject {
 }
 
 export interface Skill extends SharedSkill {
-  name: string;            // Required in portfolio (single skill name)
-  category?: string;
+  category: string;        // Required in portfolio (matches frontend)
+  skills: string[];        // Required in portfolio (matches frontend)
 }
 
 import { Types } from 'mongoose';

@@ -18,7 +18,6 @@ export const WorkExperienceSchema = new Schema({
   startYear: { type: String },
   endMonth: { type: String },
   endYear: { type: String },
-  description: { type: String },
   location: { type: String },
   achievements: [{ type: String }],
   current: { type: Boolean, default: false },
@@ -37,9 +36,15 @@ export const ProjectSchema = new Schema({
   name: { type: String },
   description: { type: String },
   technologies: [{ type: String }],
-  startDate: { type: String },
-  endDate: { type: String },
-  links: [{ type: String }],
+  startMonth: { type: String },
+  startYear: { type: String },
+  endMonth: { type: String },
+  endYear: { type: String },
+  current: { type: Boolean, default: false },
+  links: [{
+    label: { type: String },
+    url: { type: String }
+  }],
 }, { _id: false });
 
 export const SkillSchema = new Schema({

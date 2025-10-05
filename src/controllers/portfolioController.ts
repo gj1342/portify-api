@@ -109,4 +109,15 @@ export class PortfolioController {
     const portfolio = await PortfolioService.getPortfolioWithTemplate(portfolioId);
     return ResponseHelper.success(res, portfolio, 'Portfolio with template fetched successfully');
   });
+
+  static getPublicPortfolioBySlug = asyncHandler(async (req: Request, res: Response) => {
+    const { slug } = req.params;
+    
+    if (!slug) {
+      throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
+    }
+
+    const portfolio = await PortfolioService.getPublicPortfolioBySlug(slug);
+    return ResponseHelper.success(res, portfolio, 'Public portfolio fetched successfully');
+  });
 }

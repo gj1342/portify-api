@@ -60,9 +60,9 @@ export const portfolioValidationSchema = Joi.object({
       'string.empty': 'Full name is required',
       'string.max': 'Full name must not exceed 100 characters'
     }),
-    title: Joi.string().required().max(100).messages({
-      'string.empty': 'Professional title is required',
-      'string.max': 'Title must not exceed 100 characters'
+    jobTitle: Joi.string().required().max(100).messages({
+      'string.empty': 'Job title is required',
+      'string.max': 'Job title must not exceed 100 characters'
     }),
     location: Joi.string().required().max(100).messages({
       'string.empty': 'Location is required',
@@ -81,9 +81,9 @@ export const portfolioValidationSchema = Joi.object({
     avatar: Joi.string().uri().optional().allow('').messages({
       'string.uri': 'Please provide a valid avatar URL'
     }),
-    bio: Joi.string().required().max(500).messages({
-      'string.empty': 'Bio is required',
-      'string.max': 'Bio must not exceed 500 characters'
+    about: Joi.string().required().max(500).messages({
+      'string.empty': 'About section is required',
+      'string.max': 'About section must not exceed 500 characters'
     }),
     socialLinks: Joi.array().items(
       Joi.object({
@@ -122,12 +122,12 @@ export const portfolioValidationSchema = Joi.object({
         'string.empty': 'Work location is required',
         'string.max': 'Location must not exceed 100 characters'
       }),
-      startDate: Joi.string().required().messages({
-        'string.empty': 'Start date is required'
-      }),
-      endDate: Joi.string().optional().allow(''),
+      startMonth: Joi.string().optional().allow(''),
+      startYear: Joi.string().optional().allow(''),
+      endMonth: Joi.string().optional().allow(''),
+      endYear: Joi.string().optional().allow(''),
       current: Joi.boolean().default(false),
-      contribution: Joi.array().items(
+      achievements: Joi.array().items(
         Joi.string().max(200).messages({
           'string.max': 'Each achievement must not exceed 200 characters'
         })
@@ -149,21 +149,23 @@ export const portfolioValidationSchema = Joi.object({
         'string.empty': 'Field of study is required',
         'string.max': 'Field must not exceed 100 characters'
       }),
-      startDate: Joi.string().required().messages({
-        'string.empty': 'Start date is required'
-      }),
-      endDate: Joi.string().optional().allow(''),
+      startYear: Joi.string().optional().allow(''),
+      endYear: Joi.string().optional().allow(''),
       current: Joi.boolean().default(false),
     })
   ).default([]),
   skills: Joi.array().items(
     Joi.object({
-      name: Joi.string().required().max(50).messages({
-        'string.empty': 'Skill name is required',
-        'string.max': 'Skill name must not exceed 50 characters'
-      }),
-      category: Joi.string().max(30).optional().allow('').messages({
+      category: Joi.string().required().max(30).messages({
+        'string.empty': 'Skill category is required',
         'string.max': 'Skill category must not exceed 30 characters'
+      }),
+      skills: Joi.array().items(
+        Joi.string().max(50).messages({
+          'string.max': 'Skill name must not exceed 50 characters'
+        })
+      ).default([]).messages({
+        'array.base': 'Skills must be an array'
       }),
     })
   ).default([]),
@@ -183,10 +185,10 @@ export const portfolioValidationSchema = Joi.object({
           'string.max': 'Each technology must not exceed 30 characters'
         })
       ).default([]),
-      startDate: Joi.string().required().messages({
-        'string.empty': 'Start date is required'
-      }),
-      endDate: Joi.string().optional().allow(''),
+      startMonth: Joi.string().optional().allow(''),
+      startYear: Joi.string().optional().allow(''),
+      endMonth: Joi.string().optional().allow(''),
+      endYear: Joi.string().optional().allow(''),
       current: Joi.boolean().default(false),
       links: Joi.array().items(
         Joi.object({
@@ -198,6 +200,123 @@ export const portfolioValidationSchema = Joi.object({
       ).default([]),
     })
   ).default([]),
+});
+
+export const portfolioUpdateValidationSchema = Joi.object({
+  name: Joi.string().max(100).optional().messages({
+    'string.max': 'Portfolio name must not exceed 100 characters'
+  }),
+  description: Joi.string().max(200).optional().allow('').messages({
+    'string.max': 'Portfolio description must not exceed 200 characters'
+  }),
+  slug: Joi.string().optional().pattern(/^[a-z0-9-]+$/).messages({
+    'string.pattern.base': 'Slug must contain only lowercase letters, numbers, and hyphens'
+  }),
+  isPublic: Joi.boolean().optional(),
+  personalInfo: Joi.object({
+    fullName: Joi.string().max(100).optional().messages({
+      'string.max': 'Full name must not exceed 100 characters'
+    }),
+    jobTitle: Joi.string().max(100).optional().messages({
+      'string.max': 'Job title must not exceed 100 characters'
+    }),
+    location: Joi.string().max(100).optional().messages({
+      'string.max': 'Location must not exceed 100 characters'
+    }),
+    email: Joi.string().email().optional().messages({
+      'string.email': 'Please provide a valid email address'
+    }),
+    phone: Joi.string().max(20).optional().allow('').messages({
+      'string.max': 'Phone number must not exceed 20 characters'
+    }),
+    website: Joi.string().uri().optional().allow('').messages({
+      'string.uri': 'Please provide a valid website URL'
+    }),
+    avatar: Joi.string().uri().optional().allow('').messages({
+      'string.uri': 'Please provide a valid avatar URL'
+    }),
+    about: Joi.string().max(500).optional().allow('').messages({
+      'string.max': 'About section must not exceed 500 characters'
+    }),
+    socialLinks: Joi.array().items(
+      Joi.object({
+        platform: Joi.string().optional(),
+        url: Joi.string().uri().optional(),
+        label: Joi.string().optional()
+      })
+    ).optional()
+  }).optional(),
+  experience: Joi.array().items(
+    Joi.object({
+      id: Joi.string().optional(),
+      company: Joi.string().max(100).optional().allow('').messages({
+        'string.max': 'Company name must not exceed 100 characters'
+      }),
+      position: Joi.string().max(100).optional().allow('').messages({
+        'string.max': 'Position must not exceed 100 characters'
+      }),
+      location: Joi.string().max(100).optional().allow('').messages({
+        'string.max': 'Location must not exceed 100 characters'
+      }),
+      startMonth: Joi.string().optional().allow(''),
+      startYear: Joi.string().optional().allow(''),
+      endMonth: Joi.string().optional().allow(''),
+      endYear: Joi.string().optional().allow(''),
+      current: Joi.boolean().optional(),
+      achievements: Joi.array().items(Joi.string().max(200)).optional().default([])
+    })
+  ).optional(),
+  education: Joi.array().items(
+    Joi.object({
+      id: Joi.string().optional(),
+      institution: Joi.string().max(100).optional().allow('').messages({
+        'string.max': 'Institution name must not exceed 100 characters'
+      }),
+      degree: Joi.string().max(100).optional().allow('').messages({
+        'string.max': 'Degree must not exceed 100 characters'
+      }),
+      field: Joi.string().max(100).optional().allow('').messages({
+        'string.max': 'Field must not exceed 100 characters'
+      }),
+      startYear: Joi.string().optional().allow(''),
+      endYear: Joi.string().optional().allow(''),
+      current: Joi.boolean().default(false),
+    })
+  ).optional(),
+  skills: Joi.array().items(
+    Joi.object({
+      id: Joi.string().optional(),
+      category: Joi.string().max(30).optional().allow('').messages({
+        'string.max': 'Skill category must not exceed 30 characters'
+      }),
+      skills: Joi.array().items(Joi.string().max(50)).optional().default([])
+    })
+  ).optional(),
+  projects: Joi.array().items(
+    Joi.object({
+      id: Joi.string().optional(),
+      name: Joi.string().max(100).optional().allow('').messages({
+        'string.max': 'Project name must not exceed 100 characters'
+      }),
+      description: Joi.string().max(500).optional().allow('').messages({
+        'string.max': 'Project description must not exceed 500 characters'
+      }),
+      technologies: Joi.array().items(Joi.string().max(50)).optional().default([]),
+      startMonth: Joi.string().optional().allow(''),
+      startYear: Joi.string().optional().allow(''),
+      endMonth: Joi.string().optional().allow(''),
+      endYear: Joi.string().optional().allow(''),
+      current: Joi.boolean().default(false),
+      links: Joi.array().items(
+        Joi.object({
+          label: Joi.string().max(50).optional().allow(''),
+          url: Joi.string().uri().optional().allow('').messages({
+            'string.uri': 'Please provide a valid link URL'
+          })
+        })
+      ).optional().default([]),
+    })
+  ).optional(),
 });
 
 export const templateValidationSchema = Joi.object({

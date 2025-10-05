@@ -345,7 +345,7 @@ router.put('/:id', authenticateToken, UserController.updateUser);
  *                 data:
  *                   type: object
  *                   properties:
- *                     url:
+ *                     avatarUrl:
  *                       type: string
  *                       format: uri
  *                       example: "https://res.cloudinary.com/portify/image/upload/portify/avatars/user_1234567890_abcdef12.jpg"
