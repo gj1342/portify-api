@@ -16,6 +16,12 @@ export class PortfolioService {
       throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, 404);
     }
 
+    const transformedPortfolios = user.portfolios.map((portfolio: any) => ({
+      ...portfolio.toObject(),
+      id: portfolio._id.toString(),
+      templateId: portfolio.templateId.toString(),
+    }));
+
     return {
       user: {
         id: user._id,
@@ -24,7 +30,7 @@ export class PortfolioService {
         avatar: user.avatar,
         portfolioCount: user.portfolioCount,
       },
-      portfolios: user.portfolios,
+      portfolios: transformedPortfolios,
     };
   }
 
@@ -35,8 +41,8 @@ export class PortfolioService {
       throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, 404);
     }
 
-    if (user.portfolioCount >= 2) {
-      throw new AppError('Users can only create up to 2 portfolios', 400);
+    if (user.portfolioCount >= 10) {
+      throw new AppError('Users can only create up to 10 portfolios', 400);
     }
 
     const template = await Template.findById(portfolioData.templateId);
@@ -78,8 +84,8 @@ export class PortfolioService {
       throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, 404);
     }
 
-    if (user.portfolioCount >= 2) {
-      throw new AppError('Users can only create up to 2 portfolios', 400);
+    if (user.portfolioCount >= 10) {
+      throw new AppError('Users can only create up to 10 portfolios', 400);
     }
 
     const template = await Template.findById(templateId);
@@ -117,18 +123,20 @@ export class PortfolioService {
         company: exp.company || '',
         position: exp.position || '',
         location: exp.location || '',
-        startDate: exp.startMonth && exp.startYear ? `${exp.startMonth} ${exp.startYear}` : '',
-        endDate: exp.endMonth && exp.endYear ? `${exp.endMonth} ${exp.endYear}` : undefined,
+        startMonth: exp.startMonth || '',
+        startYear: exp.startYear || '',
+        endMonth: exp.endMonth || '',
+        endYear: exp.endYear || '',
         current: exp.current || false,
-        contribution: exp.achievements || [],
+        achievements: exp.achievements || [],
       })),
       education: profileData.education.map(edu => ({
         id: new Types.ObjectId().toString(),
         institution: edu.institution || '',
         degree: edu.degree || '',
         field: edu.field || '',
-        startDate: edu.startYear || '',
-        endDate: edu.endYear,
+        startYear: edu.startYear || '',
+        endYear: edu.endYear || '',
         current: edu.current || false,
       })),
       projects: profileData.projects.map(proj => ({
@@ -136,20 +144,20 @@ export class PortfolioService {
         name: proj.name || '',
         description: proj.description || '',
         technologies: proj.technologies || [],
-        startDate: proj.startDate || '',
-        endDate: proj.endDate,
-        current: !proj.endDate,
+        startMonth: proj.startMonth || '',
+        startYear: proj.startYear || '',
+        endMonth: proj.endMonth || '',
+        endYear: proj.endYear || '',
+        current: proj.current || false,
         links: (proj.links || []).map(link => ({
-          url: link,
-          label: link.includes('github') ? 'GitHub' : link.includes('demo') ? 'Demo' : 'Website'
+          url: link.url,
+          label: link.label || (link.url.includes('github') ? 'GitHub' : link.url.includes('demo') ? 'Demo' : 'Website')
         })),
       })),
-      skills: profileData.skills.flatMap(skill => 
-        (skill.skills || []).map(skillName => ({
-          name: skillName || '',
-          category: skill.category || '',
-        }))
-      ),
+      skills: profileData.skills.map(skill => ({
+        category: skill.category || '',
+        skills: skill.skills || [],
+      })),
     };
 
     const portfolio = await Portfolio.create(portfolioData);
@@ -159,7 +167,13 @@ export class PortfolioService {
       $inc: { portfolioCount: 1 },
     });
 
-    return portfolio;
+    const transformedPortfolio = {
+      ...portfolio.toObject(),
+      id: portfolio._id.toString(),
+      templateId: portfolio.templateId.toString(),
+    };
+
+    return transformedPortfolio;
   }
 
   static async updatePortfolio(userId: string, portfolioId: string, portfolioData: PortfolioData) {
@@ -228,7 +242,17 @@ export class PortfolioService {
       { new: true }
     );
 
-    return portfolio;
+    if (!portfolio) {
+      throw new AppError('Portfolio not found or access denied', 404);
+    }
+
+    const transformedPortfolio = {
+      ...portfolio.toObject(),
+      id: portfolio._id.toString(),
+      templateId: portfolio.templateId.toString(),
+    };
+
+    return transformedPortfolio;
   }
 
   static async getPortfolio(userId: string, portfolioId: string) {
@@ -241,7 +265,13 @@ export class PortfolioService {
       throw new AppError('Portfolio not found or access denied', 404);
     }
 
-    return portfolio;
+    const transformedPortfolio = {
+      ...portfolio.toObject(),
+      id: portfolio._id.toString(),
+      templateId: portfolio.templateId.toString(),
+    };
+
+    return transformedPortfolio;
   }
 
   static async deletePortfolio(userId: string, portfolioId: string) {
@@ -273,7 +303,13 @@ export class PortfolioService {
         .sort({ createdAt: -1 })
         .lean();
 
-      return portfolios;
+      const transformedPortfolios = portfolios.map(portfolio => ({
+        ...portfolio,
+        id: portfolio._id.toString(),
+        templateId: portfolio.templateId.toString(),
+      }));
+
+      return transformedPortfolios;
     } catch (error) {
       throw new AppError('Failed to fetch portfolios by template', 500);
     }
@@ -290,10 +326,39 @@ export class PortfolioService {
         throw new AppError('Portfolio not found', 404);
       }
 
-      return portfolio;
+      const transformedPortfolio = {
+        ...portfolio,
+        id: portfolio._id.toString(),
+        templateId: portfolio.templateId.toString(),
+      };
+
+      return transformedPortfolio;
     } catch (error) {
       if (error instanceof AppError) throw error;
       throw new AppError('Failed to fetch portfolio with template', 500);
     }
+  }
+
+  static async getPublicPortfolioBySlug(slug: string) {
+    const portfolio = await Portfolio.findOne({ 
+      slug, 
+      isPublic: true 
+    })
+    .populate('templateId', 'name description isActive')
+    .lean();
+
+    if (!portfolio) {
+      throw new AppError('Portfolio not found or not public', 404);
+    }
+
+    await Portfolio.findByIdAndUpdate(portfolio._id, { $inc: { viewCount: 1 } });
+
+    const transformedPortfolio = {
+      ...portfolio,
+      id: portfolio._id.toString(),
+      templateId: portfolio.templateId.toString(),
+    };
+
+    return transformedPortfolio;
   }
 }

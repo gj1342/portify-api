@@ -24,7 +24,7 @@ export class UserService {
     }
 
     return {
-      url: secure_url,
+      avatarUrl: secure_url,
       publicId: public_id,
       user: {
         _id: updatedUser._id,

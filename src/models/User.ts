@@ -26,8 +26,8 @@ UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ username: 1 }, { unique: true, sparse: true });
 
 UserSchema.pre('save', function(next) {
-  if (this.portfolios && this.portfolios.length > 2) {
-    return next(new Error('Users can only create up to 2 portfolios'));
+  if (this.portfolios && this.portfolios.length > 10) {
+    return next(new Error('Users can only create up to 10 portfolios'));
   }
   this.portfolioCount = this.portfolios ? this.portfolios.length : 0;
   next();
